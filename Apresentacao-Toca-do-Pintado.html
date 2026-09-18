@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toca do Pintado · Análise e direcionamento · Keepads</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --verde:#00CA9E; --verde-d:#00A582; --verde-l:#E6FAF5;
+  --preto:#0D0D0D; --cinza:#6B7A76; --linha:#E4EBE8;
+  --fundo:#F5F8F7; --branco:#FFFFFF;
+  --alerta:#F2994A; --alerta-l:#FDF1E6; --erro:#E5555A; --erro-l:#FDECEC;
+  --azul:#3B7DD8; --azul-l:#EAF1FC; --roxo:#7A5BC7; --roxo-l:#F3F0FA;
+  --r:14px; --sombra:0 1px 2px rgba(13,13,13,.04), 0 8px 24px rgba(13,13,13,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--fundo);color:var(--preto);font-family:'Poppins',system-ui,sans-serif;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Baloo 2','Poppins',sans-serif;line-height:1.15}
+.wrap{max-width:1240px;margin:0 auto;padding:0 22px}
+html{scroll-padding-top:86px}
+
+.hero{background:var(--preto);color:#fff;padding:20px 0 26px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-180px;top:-230px;width:560px;height:560px;border-radius:50%;
+  background:radial-gradient(circle at center, rgba(0,202,158,.28), rgba(0,202,158,0) 65%)}
+.hero-top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;position:relative;z-index:2}
+.logo{display:flex;align-items:center;line-height:0}
+.logo img{height:38px;width:auto;display:block}
+.units{display:flex;gap:5px;flex-wrap:wrap;background:rgba(255,255,255,.07);padding:4px;border-radius:999px}
+.units button{border:0;background:none;font:inherit;font-size:12.5px;font-weight:500;color:rgba(255,255,255,.64);padding:7px 15px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.units button.on{background:var(--verde);color:var(--preto);font-weight:700}
+.hero h1{font-size:clamp(21px,2.9vw,30px);font-weight:800;margin:18px 0 5px;position:relative;z-index:2;max-width:900px}
+.hero h1 em{font-style:normal;color:var(--verde)}
+.hero p.sub{color:rgba(255,255,255,.62);font-size:13px;max-width:760px;position:relative;z-index:2;line-height:1.5}
+.hero-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:15px;position:relative;z-index:2;
+  border-top:1px solid rgba(255,255,255,.10);padding-top:13px}
+.per-lab{font-size:12.5px;color:rgba(255,255,255,.6)}
+.per-lab b{color:#fff;font-weight:600}
+
+.topbar{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--linha);
+  box-shadow:0 2px 12px rgba(13,13,13,.05)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.tabs{display:flex;gap:1px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{border:0;background:none;font:inherit;font-size:13px;font-weight:500;color:var(--cinza);padding:15px 13px;cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--preto);font-weight:600;border-bottom-color:var(--verde)}
+.stepper{display:flex;align-items:center;gap:9px;font-size:11.5px;color:var(--cinza);flex:0 0 auto}
+.stepper b{font-family:'Baloo 2';font-size:14px;color:var(--preto);font-weight:800}
+
+main{padding:26px 0 70px}
+.panel{display:none} .panel.on{display:block;animation:fade .26s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.card{background:var(--branco);border:1px solid var(--linha);border-radius:var(--r);box-shadow:var(--sombra)}
+.grid{display:grid;gap:14px}
+.g5{grid-template-columns:repeat(5,1fr)} .g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+.kpi{padding:18px 19px;position:relative}
+.kpi .lab{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#55635F;font-weight:600}
+.kpi .val{font-family:'Baloo 2';font-size:32px;font-weight:800;margin:7px 0 3px;letter-spacing:-.4px}
+.kpi .val small{font-size:15px;font-weight:700;color:var(--cinza)}
+.kpi .hint{font-size:11.5px;color:var(--cinza);line-height:1.45}
+.kpi.dark{background:linear-gradient(150deg,var(--preto),#1a2321);border-color:var(--preto)}
+.kpi.dark .lab{color:rgba(255,255,255,.55)} .kpi.dark .val{color:var(--verde)} .kpi.dark .hint{color:rgba(255,255,255,.6)}
+
+.sec{margin-top:30px;scroll-margin-top:80px}
+.sec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:13px;flex-wrap:wrap}
+.sec-h h2{font-size:19px;font-weight:700} .sec-h p{font-size:12.5px;color:var(--cinza)}
+.eyebrow{font-size:10.5px;text-transform:uppercase;letter-spacing:1.1px;color:var(--verde-d);font-weight:600}
+
+.lead{font-size:15.5px;line-height:1.7;color:#2A3330;max-width:860px}
+.lead strong{font-weight:600;color:var(--preto)}
+.body{font-size:13.5px;line-height:1.72;color:#2A3330}
+.body + .body{margin-top:10px}
+.body strong{font-weight:600;color:var(--preto)}
+
+.quote{background:linear-gradient(150deg,var(--preto),#1a2321);color:#fff;border-radius:var(--r);padding:30px 32px;position:relative;overflow:hidden}
+.quote:after{content:"";position:absolute;right:-120px;bottom:-190px;width:430px;height:430px;border-radius:50%;
+  background:radial-gradient(circle at center, rgba(0,202,158,.24), rgba(0,202,158,0) 65%)}
+.quote p{font-family:'Baloo 2';font-size:clamp(18px,2.2vw,25px);font-weight:700;line-height:1.35;position:relative;z-index:2;max-width:920px}
+.quote p em{font-style:normal;color:var(--verde)}
+.quote .who{font-family:'Poppins';font-size:12px;color:rgba(255,255,255,.55);margin-top:13px;font-weight:400;position:relative;z-index:2}
+
+.funil{padding:26px 22px}
+.frow{display:grid;grid-template-columns:1fr minmax(220px,430px) 1fr;align-items:center;gap:12px}
+.fside{font-size:12px;color:var(--cinza)} .fside.l{text-align:right}
+.fside .n{font-weight:700;color:var(--preto);font-family:'Baloo 2';font-size:15px}
+.fside .tag{display:inline-block;background:var(--verde-l);color:var(--verde-d);border-radius:6px;padding:1px 7px;font-size:11px;font-weight:600;margin-right:5px}
+.fside.r .tag{background:#F0F3F2;color:#2A3330}
+.fbar{color:#fff;background:var(--preto);border-radius:11px;padding:13px 18px;display:flex;justify-content:space-between;align-items:center;margin:0 auto;gap:12px}
+.fbar .t{font-size:12px;color:rgba(255,255,255,.65);font-weight:500} .fbar .v{font-family:'Baloo 2';font-size:22px;font-weight:800}
+.fbar.acc{background:var(--verde);color:var(--preto)} .fbar.acc .t{color:rgba(13,13,13,.6)}
+.fbar.proj{background:var(--branco);color:var(--preto);border:2px dashed var(--verde)} .fbar.proj .t{color:var(--cinza)}
+.farrow{text-align:center;color:#DDE7E4;font-size:14px;line-height:1;margin:2px 0}
+
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--cinza);font-weight:600;padding:12px 11px;border-bottom:1px solid var(--linha);white-space:nowrap;background:#FAFCFB}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--branco)}
+th:first-child{background:#FAFCFB}
+td{padding:11px;border-bottom:1px solid #F1F5F4;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+tbody tr:hover td,tbody tr:hover td:first-child{background:#FBFEFD}
+td.name{font-weight:500;max-width:340px;white-space:normal;line-height:1.35}
+td.txt{text-align:left;white-space:normal;line-height:1.45;color:#2A3330}
+th.txt{text-align:left}
+tr.me td,tr.me td:first-child{background:var(--verde-l)}
+tr.me:hover td,tr.me:hover td:first-child{background:#D8F6EE}
+tr.me td{font-weight:600}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;letter-spacing:.4px;text-transform:uppercase}
+.b-conversa{background:var(--verde-l);color:var(--verde-d)} .b-video{background:var(--azul-l);color:var(--azul)}
+.b-alcance{background:var(--roxo-l);color:var(--roxo)} .b-perfil{background:var(--alerta-l);color:#B5701F}
+.b-erro{background:var(--erro-l);color:var(--erro)} .b-neutro{background:#F0F3F2;color:#2A3330}
+.best{color:var(--verde-d);font-weight:700} .worst{color:var(--erro);font-weight:600}
+.na{color:#C8D3D0}
+tfoot td{font-weight:700;background:#FAFCFB;border-top:2px solid var(--linha);border-bottom:0}
+
+.chart{padding:20px 18px 14px;position:relative}
+.chart h3{font-size:14.5px;font-weight:700;margin-bottom:2px}
+.chart .cap{font-size:11.5px;color:var(--cinza);margin-bottom:14px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.leg{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--cinza);margin-top:10px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.ret{display:flex;flex-direction:column;gap:9px;margin-top:6px}
+.ret-row{display:grid;grid-template-columns:82px 1fr 112px;align-items:center;gap:11px;font-size:12px}
+.ret-bar{height:26px;background:#F0F3F2;border-radius:7px;overflow:hidden}
+.ret-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--verde),var(--verde-d));border-radius:7px}
+.ret-val{text-align:right;color:var(--cinza)} .ret-val b{color:var(--preto);font-family:'Baloo 2';font-size:14px}
+
+.note{padding:17px 19px;border-radius:var(--r);font-size:13px;line-height:1.65}
+.note.ok{background:var(--verde-l);border:1px solid #C4F0E4;color:#0A4F41}
+.note.warn{background:var(--alerta-l);border:1px solid #F7DCC0;color:#8A4B12}
+.note.info{background:var(--azul-l);border:1px solid #CFE0F8;color:#1F4E93}
+.note b{font-weight:600}
+.diag{padding:24px}
+.diag h3{font-size:16px;font-weight:700;margin:22px 0 8px;display:flex;align-items:center;gap:9px}
+.diag h3:first-child{margin-top:0}
+.diag h3 .n{width:25px;height:25px;border-radius:7px;background:var(--verde);color:var(--preto);display:grid;place-items:center;font-size:13px;font-weight:800;flex:0 0 auto}
+.diag h3.w .n{background:var(--alerta);color:#fff}
+.diag p{font-size:13.5px;line-height:1.72;color:#2A3330;margin-bottom:10px}
+.diag p strong{font-weight:600;color:var(--preto)}
+.ev{display:inline-block;background:#F0F3F2;border-radius:6px;padding:1px 7px;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.ev.g{background:var(--verde-l);color:var(--verde-d)}
+.st{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;background:#F0F3F2;color:var(--cinza)}
+
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch}
+.vs-col{padding:20px}
+.vs-mid{width:1px;background:var(--linha)}
+.vs h4{font-size:15px;margin-bottom:2px}
+.vs .rowv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F1F5F4;font-size:12.5px}
+.vs .rowv b{font-family:'Baloo 2';font-size:15px}
+
+.occ{padding:19px 20px;display:flex;flex-direction:column;gap:7px}
+.occ h4{font-size:14.5px;font-weight:700}
+.occ .q{font-size:12px;color:var(--cinza);line-height:1.5}
+.occ .p{font-size:12.5px;color:#2A3330;line-height:1.5;border-top:1px dashed var(--linha);padding-top:8px;margin-top:2px}
+.occ .p b{font-weight:600}
+
+.seas{display:flex;flex-direction:column;gap:7px}
+.seas-row{display:grid;grid-template-columns:92px 1fr;align-items:center;gap:11px;font-size:12.5px}
+.seas-bar{height:34px;border-radius:8px;display:flex;align-items:center;padding:0 13px;font-size:12px;font-weight:500;gap:9px;overflow:hidden;white-space:nowrap}
+.s-pico{background:linear-gradient(90deg,var(--verde),var(--verde-d));color:#fff;font-weight:600}
+.s-alto{background:#9AE8D4;color:#07584A;font-weight:600}
+.s-medio{background:#DDF3EC;color:#2A6358}
+.s-baixo{background:#F0F3F2;color:var(--cinza)}
+.seas-bar b{font-weight:700}
+.seas-lab{color:var(--cinza);font-size:11.5px;text-align:right;font-weight:500}
+
+.frente{padding:22px 21px}
+.frente .num{font-family:'Baloo 2';font-size:12px;font-weight:800;color:var(--preto);background:var(--verde);width:26px;height:26px;border-radius:8px;display:grid;place-items:center;margin-bottom:11px}
+.frente h4{font-size:16px;margin-bottom:5px}
+.frente .fn{font-size:12.5px;color:var(--cinza);line-height:1.55;margin-bottom:12px;min-height:40px}
+.frente ul{list-style:none;display:flex;flex-direction:column;gap:7px}
+.frente li{font-size:12.5px;line-height:1.5;color:#2A3330;padding-left:16px;position:relative}
+.frente li:before{content:"";position:absolute;left:0;top:7px;width:6px;height:6px;border-radius:2px;background:var(--c,var(--verde))}
+.frente .obs{margin-top:13px;border-top:1px solid var(--linha);padding-top:11px;font-size:11.5px;color:var(--cinza);line-height:1.5}
+.frente .obs b{color:var(--preto);font-weight:600}
+
+.ask{padding:19px 20px}
+.ask h4{font-size:14.5px;margin-bottom:4px}
+.ask p{font-size:12.5px;color:var(--cinza);line-height:1.55}
+
+.lnk{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--verde-d);text-decoration:none;
+  border:1px solid #C4F0E4;background:var(--verde-l);padding:6px 11px;border-radius:8px;margin-top:10px;align-self:flex-start;transition:background .12s,color .12s}
+.lnk:hover{background:var(--verde);color:var(--preto);border-color:var(--verde)}
+.lnk .id{font-weight:400;opacity:.65;font-variant-numeric:tabular-nums;font-size:10.5px}
+.lnk.sm{margin-top:7px;padding:4px 9px;font-size:11px}
+.pecas{display:flex;flex-direction:column;gap:5px;margin-top:9px}
+.ref h4{font-size:15px;margin-bottom:3px}
+.ref .origem{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--cinza);font-weight:600;margin-bottom:9px}
+
+footer{border-top:1px solid var(--linha);padding:22px 0 40px;font-size:11.5px;color:var(--cinza)}
+footer b{color:var(--preto)}
+footer p{margin-top:10px;max-width:960px}
+
+@media(max-width:980px){.g5,.g4{grid-template-columns:repeat(2,1fr)}.g3,.g2{grid-template-columns:1fr}.frow{grid-template-columns:1fr}.fside.l{text-align:left}.vs{grid-template-columns:1fr}.vs-mid{display:none}}
+@media(max-width:560px){.g5,.g4{grid-template-columns:1fr}.topbar{position:static}.topbar .wrap{flex-direction:column;align-items:stretch;gap:8px;padding-top:9px;padding-bottom:9px}.tabs{order:1}.stepper{order:2;justify-content:flex-end}.seas-row{grid-template-columns:70px 1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{.topbar{position:static}.panel{display:block!important}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-top">
+      <div class="logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZQAAACNCAYAAACQa4xHAACGeElEQVR42uxdZ3gc1dV+z52Z3dWuerMt925cwJVmsCXTe5UoCYRAAgmkfCGhhLYSJECAhBAIxPReJHovBskGg5vc5V7kot7L1pm55/sxs/ZayMYqNgb2PM88lqXZ2dvmvKcfIEYxilGMYhSjGMUoRjGKUYwOFaK9/YGZadcN+fl73OfNt/4tyAeQn88AwACIiA/WwJmZ9hhbfj4f7DHEKEYxilGM9okwtE+g2RcVc7FKB2GMEbDr/I9ewczaPu+JUYxiFKMYHRwNRQWgM6cCcE5e9w71MRxxWZ5EtdJoNZIUTZngyoxPUIVrR3t7+/xgQ0vfPunmm2lHtRBRGwBi5gOmKTCzICLJzI48bMhIWLczvkYE9GNShgVuzTjMT0QtuzQpZpEPcExriVGMYhSjgwwotlTv/LS14qkFrVUnuVVXunfnUgTYJCKyzFoAiASIAGaGNE2Z4vLQrzJGbflNyoj7J7pTZ7eyYZmkepmR22DCzJz2RqDqvWu2zD2yxR+EKQ0aE5+OyxIH7nS54t77U8bYtQBeIaKGaBCKbXeMYhSjGB0MQGEmEPErTVuH3Fi7YuuO5mrAZEB17o29Wx8nAqQJKISx6VkYZ7reKRyWfQkRBbxerygoKOgVRs7MRPn5Cufni6drN37457ayE5rr6iSpmmDAGgMMZKZnYZwzEWuaqnc+PTz7zdPj+hQQUaOXWRTEQCVGMYpRjA4eoOSWzx1aVL1xvaqoKgAyWO7XQxQGG6ZuJGRmaGsHnPR8f2f8VQBMoHcc5TOLi9UVOTnGnRWr/3ZzW9mt/uYWgxRNZebdYwCxwYYJaQKapo5Oz8J0Tih7asj0C4hofUxTiVGMYhSjA0ei4y9a2gKGIoRiQO4XmER0FYNAqupQffX14d+2lV2+3Ncwi4i4qJPv6CoVFxer83NyjN9tXXRlsdFwq7+5yVQVhxIBk11jABORogrFqZJU5PqKcqMwVD3ugfp1r86uWJdu+15izvoYxShGMToYgJLk9nRbnTDAxEJV3tu5hue0Vl7pAJCHnmkExcXFak5OjvFVfcVVn3Pzk29VrTEV4RQGS9obuEkwGFIIh0ttb2nVb6heNPHRlvVvMHMC4TuixGIUoxjFKEa9BCiKpnQzajjyQCFM0FhXykkh5iRYvvzugQmzmpOTYzDzhRc0LHpyUcNOVsgpTOwfIEhmCCJN8YXDrUlxMx6sKruEiDgfJUps62MUoxjFqHdJ7fgLvzQl0DOXhzQNOAU5AQwFsLw7votCZiWHyGDm8Xlbv3yivr2FpWQwUZfQToKhCFXdWlchVyQ4z5DMTxGRGdv6GMUoRjE6wIDScyJASrRBugEMBrAcXVR5bAAy17W2pk/f8MlLX/sqk6FLCSG65Y8RAMlgiE4fOPAUAB4ArQcirDlGMYpRjH7KJHr7gRJMAJne5rVkayjoCqBEGD0zO15s3fTS1+GawzUDZnfBBABMMFioeLl+M9uAggPpRGFmAjOBQWAQM++6fgyHZo/5sJWaFJnnD31OkX2LnmPM5xajGH1PgGKXbmFV0wAgsSuAwsxEJSUKM6PMaHvhQ9lwsmgPGSaR0uMxscSIuESKzLm3VBOb4aj2pQB2mDSRDSdWpn7kAoBcLlSi7/8BMFvBzGoxF6vW9KLmY/nIds0z+n77okNsLsTMu9afmUVkz6L3LXqOuzRZC2jUqM/GgCZGMTqQgGK/eKyQAABHVz6WXZKveHJyjAWt1Y/nVi/IW7pjgw7VoUruGfu3II4x0Z1mAmjtJQYrcgsLFZvhGPZl2n93M7Onz/L7PYcv/8Rj/9/NzK5k0lBEeeau+xlkA4w4VBiUzXQFvF4BBhGRJCIjh3KMRAhmZmdkTt6KJW6863Uzs4eZPU4SiNxvX5zLhUpuYeH3xoAje4Xd+7Vr/YlIKrv3LOHezUuSjl37dkLUnkUuRVhAY0R9lrF7biIGMDH6qZN6QJ5KAFkgYOzvR7zFxWpBTo5RWLf52otqF/1qe321IRxuVXLP8xAlWFJ8vPJ28/aXf542vB1eb7cSHJlZUEmJICIj6nepALIBpAHIbDBDxz9Vu+6Yb3z1VBNIQL1aifurVnGK4iQD3ParzcULTksbvmBWYt8aAGUeEqVFyDMpSgKOfv7BBhIAiv39rAJwFAA+5qEAjvWbZspNOxYc+VjtulkaRCIR+MnaTYT0Ppix9kP8InUol7RULTk6IfMbANsA1AH4jIh8EWC/mpdoszHFPNAJpgTgCy5Wc/JzZPR3MbMLwNEAhth71mdbuP3wJ2vWHKkKh3pfy3q0mjpm166HYivWgsANYd+m95u3l56WNLAMQBOAagBziShUFKWCFzOr2YAZ88/F6KdI38qUv3TL/MGv1q/fIgmiO3YhAsCmbg5Jz1K2jjjzj0T0n+9ikl4uVgsox2B/eGbS5jc/bg22awor+x0e/J1qGLMhkz3q8LD2i80TLnh+ypLZWunUa/QuAUl+PmCXkWHmLADHvly34bq/Vi4bOD4ta7jD5YQ0JSp9LVhSVw4oKiA0y7hmhi0bmxCApmB8Sn+M9CRje01V+zq9bd1rg2esOSN54ANOolVhexkjgQkHC0jyAFFkf1+m6kKNHhifvfaDPy3UWyYMIVf/w/oNyGo2wiiu2wKEdEDaPFrRABIAm4ARwuDkfjg8KROKqiAcCGJZzba1v+g7puG2AdOe8gDvElGjtekQ3nxGb5fDYWaioiKBvDwTABJBaGE5YofpO/6WrYuu/KRlW8ph7syxaZkZZJgmWEpsaW/GmobtACn2fAgwwnseakEYmNQHk5MyIYRAY0MjynyNqxoRbnll0IxP89KGvpGhutbUmyHrM4WFCufmcqwyQ4xigNIDQBEASyOEW4YdQ3/vc8RlRPTivgAlt7BQKcrLMycsKZwwLmtAcWHN5lQOh5mJesUcJ0BSqsBf08btvHvQtKkE1O9v3xQCIJkVIjIFAJN5+pg1b19wfnz/y9c7jLT36jZDlwz4fSaYJYgIJISqOElCwjLVEVQ70pkBMEFKU2eYBkNzaHA5MMqdiks9WXBqrsKb0w77PFHRHm+TRoQpyQMp7UbXW2PmxHZTv+LqikWn9nG4Tnuobh1YEBAKAcGgASII1UkCu/fGBMOuLg2FBAxTZ0hD2r9U4IkXqiBMTOyDY0zXhrT4pLe9GRNechGtDKF3C3dGP4uZ495uKv/lbVUrpuemDL302fZy7Ai3wZQM+PyANHVEQtBJEariIIBhgAHGrj3b9WwiNs0wQxoMBkMIFR4PgQgjnEn4efIQfNa8/YP7+k377Nj4jKeIqB2IFSaN0U8cUH6x9ZshL9St3dwDDYVZGjQ9eQC+Gn3a+UT0FttMuRMGoBCRycxj/q+q9KuHKpakKdIhTeod3w4RgY2wObTPAOXr/jkX93O6X9vfIpF2tJn9I498rHXL3wq2LTqnOU5zhhrqAQkJ1cFgkEIkIivJbOW+fAfIWdWaJbMkSLAJ6CFKTM8Uxyb0w8/dAz79WfKQ+1Siz01YZfgPRGHLqPVX1oRbL3mzZuMdLxk1I9f5W4CWJgk1DiDrYAgb4E3ev7lFENRkliAwTIOgQvRL64Mx7PZdmjz02V+lDr+LiGrAXkF0p+QehErkMitF1lzS5phNP3t6y9Lr55lNgytgAI2NDMXBEILBRIJAFJXPtD97Zp1tgti1z8yS7Tg+aRJMHUjwiGMTs3BTwrDqQJzrwYvisp4lotpYYdIY/VToWz4Ut1CEbbjqAScXqA76JID2fTJsQDJz4h92LHxpdvuWNFU6DIN6x69DIJA0jfS0dPWNjKM+6euIe9OO6OGC75LabakyTWioN8M3fxaqu/7OqtKMGn87EFB0VThVViBMZoAsKb0ryyUj91shcQqRAtUZj9bmFvPjpkZ8HL/t5JcaN538YN26536fPvr3RNSWy4VKEeX1mgksdzeYDFsdbHnwmpaVZ39dsw4wYRIpUBwexarlZoVxmfsZGCE7roUtHAhFA4FkVW2dWSXgKfFXXbdF+k5t1vXrMkj7RGcQo+t9dAiEL4q/UO0k2KPeaip/+v9ay8Zub6kGTEgSQqoOj2qwtB5MgIygSFcBGAyT9zxi1nFXoCoazKBpfu3finNqtvYdlpn1j/Q0/JqZ/0RE76MwV+HcwpgJLEY/LQ3lt9sWDZtdU7ZREndLQ1FAbLJBH4w6xX968sDjiGhZR7XfsnPnCc4tlOdv/OLNtwIV5yIYNkCK2lsBvQQYHKepR6opixeOOeNkImren2RGL3tFARVIZk68ZefSh1Y4gld8uG0NIGGSUAXjwEXyUARjmKWUIXalZyieoLlsWeYxeYP6DNoEr1dFQUHPHfaFuQryikxmPv0P1aUvPVG3Ljno9xtCaILBgg/wgbOCuNkUTk3twyr+M+iY+y5MGXIrWaDQtYRT9gpQgQwaxvUnbf38n/PbKiFDuiEUTWHwQfeMW3HpxKY0TEVT1NP7jsK7WdP/lkDK7e2QMRNYjH5aGkovGFIAQUhSnSEAzbt/ufuFy0ORoLwiM6CH/7NK8Z8rAkETQlNlb4EJs8EelzpJTfh64egzzrHB5Dtf5IhpgpnT8srnvlzk33ky2toNCIcgQQrjwLIntqVgEISiuBBsbDaCLm3SmXVLF+i6/qsETXs7sBfz4f5K85Kl6iFhfNRcec1fapY9+vDOZYIkmaIX1/+75wgCSOWgLqsQwh/rl92Y5Ukezcx5RKTvL6jkcqHynrjY/PmmL/82bscnt25urjLBBFK1Hoea92R+JphIUVXTZPO9HWtptK/htksrvj58dtZRVxJRQwxUYvRjpQORKQ8IgYeq10gA4Y5mLi60TDdB5r+fXbfw95tqK0wITektZiaYTXY71KOV5GVLR591ERHVF1r5B/I7NRPkg5mTL94y942iQOXJwhcyhHCqAATj4DIoEwyQUEXINFeGmtKO2PzRi+4FL5xMRGYuF3YrIfKO4i9UIjLOWP/pL07bOe9//yxfQiQVySQUiYPPgJlIKKSKyoY64/Kqr8/5sr3mXWZWqCjvO3M6vMyiiPLMgDSP3+7GrZurtkmVFQWgPdoafF9kj0ERQhUbGmuM51u2nO2tWv4VM4+22yiIGPuJUUxD+U6GTjCZcVpSf0tY62AR0/LyjPpw8E/n1n1zy5zy1bqixqlm75m5TOkQyinOPps+HnnSpUS0s5BZydsPif4uUSDjmXDa+mNe/livn0m+kCGJVOD7ZU4SUBSTzTW+Gs8JmcP+N4f5OCKq7KqUa2tfRjAYPCtjw1vP+EMBKUglSfheGZsJhlAd6uaK7fovFHHKQ/rYRxPz3ry6hKFiL3lMzEz51r9pL9Rv+s+ntVukorrYwKGX+iHBEEJTg61+42+8dkxLOPgsM59I+fmBWD25GMU0lP3g6gAw0OGO+p+V8EVExtsVm6Yfv/nTf3y0daVpg0mv+CSI2WQFyjmJQyo+HnnSOUS0zltcrO4PmDCzKhnildad95WK0GnwBXUQqYfKJkkiRTHI2GS0Dn27acd7zOyi/Pz97uvCzKIAxMw88dbWta+Hw0FWmCEJh0Rmt2SGcLi0rZU79Ysqvv7luRs/z8shMnILO9fEsktKlDuJ5OWb5h33u9ayiRQIswQdsmVsJBgkFJXbg/pDvi1H/2n7onudBQUyvyQ/1kYhRjENZX8obOn8lgRdAiUnhwxmHnpFxYJnV/pqNI1cUofsFYamMiRUoZyTNqz69cEzziCiNcXMas7+ZJxb5jDjlh1Lzji3dsEN3NRigoTWE7Gxs0n15HnMDCkUdVt9jflLLJlc5m8siCu48ybk54v9eTwBSFU1fq16y93/rFrhgGmaINHD+mi7/mWAKGIS7O48rd41qhLQg6KEa2cz85dEVNWZJjb30UdZA6AqyhGtAZ8kVeVDwcy1zz0EQxGkmW3txppU/Xe14WB5ksP1z/3VoGMUo5+khiKZARL4446FKoA4ZiaywKT/W/6qDz9qqxghDJIG9Y4NmQDTUEwxwpHY8vrgGWcR0Qq2e6nsB6MmlJUxM6cOiUt8wGxrM3viKxFEEIDJ0tTZ1A02DWZpMkvdgGRdEBkKdQ9DmRlCdSrNzU3mbTXL/zJy+cujiIjh9e7zgcXFxSqI5OuN5X/4t77jNPLruiBF6cGBYQIMNk2dTd2U0iBphqX1f0NXiLovJRCEEgqb6fEJyY164O69amBFRdIJgZkJmSeSbgji3jvHKglo9qUSQVDvqXEmM4TiEJ/uXGNeUbHgVmYeUoZ8/qEUCY1RjA6+yQsEkozyUJsDQB+7FH1KYdO2L67a9uWY2uYGgxVF9IZEqYJNVkm5IG1kzVlJQ88hoiWFXLjfUVBFKBJaQYG8v2rVdX9uXj2GQjrQDdPJrlBYPSylUyj9+/XXxg0Ypg5ITKP+8Sk0rt8QNTEzXZNxqmrqQY6kQnTLdMKA0+0W74887TYV4MJx+bQvwMzJzjaZeejzzeV/XbBjnRSK2q1oLvugmBKSON6lDu0/UBuTkaWckjYUVw6aKMb1y9LG9B+imawLlma3JG7JDFYdytLq7XzitpIrtoZ9hwsi6d2LA5t3aUTcw5eAQAwJsGmE/VIP+6Qe9klDD0pphCVLKQE2eyNmnJmFahIWhhtTnq/b+NjdVCABxPwoMYqZvDplrkQsBejCpKEAUMnM6gPVqx/Jb14zytfSYpDqUHsDTBSGNISpXJ5xWO1zA465UCP6ar/NXNiVCW8y88AT1310fVtbAwuhii4zWyKwaUoIU8waNIY8be2fnx8/auUVqcPNVjO8BoCeqDjGXLB1rruCzSGHDRh23rN1Gwi6yRCiy/yJAWEEg+ZD7eVnnbjhs0l5o2jZ3jKx8+yaVuevn3PDZ6KlL7Fqmt3QDIkBKXVGgkeZRgl+f9BX+MCACU2nJmQ1AFgHIAOQw9cH2p336s7zPkTLgNq6WiYS1FUOLJlBimpuMP1CZXkLAxeN69SKyDCZ9Z6eIwFAmmEJd5wgoeDawZOQrGgAA9vCPuwIt2N9qBW1RgDSHwAkTAhF6S4GMABTqEplU738v9DSk8PMxxPRlzHTV4xigNKJpC4hWThc5gkJ/a4joh3vNG695bbmNZeGWtsMofROfgAxm6amKKO1jPahhuMcIlqAYu9+gwkA2H3ljefqN/3lK/IlE5MpqWumByICm7oxMCVDHaArlS/1n35bXygvEJHxy07uzxQOLDBDZ6dozif/u2NFhi4lc1dBhYjMsCH/2bAqebJMONsBLCsoyqNOARMkmTlzwPLXzmznoCRSqMuMkC0vxrTUQbSxrf6TLyed8vs+5Np42t5vv/ueutW33drScA1LEEkW3MV+ZgKkhNta8M+6dbOYeRQRbfi2L4WgEjkjJQe6yeBZQtL0jCFiXVvdhqNcGWseyZz0DoBVAEIAPOuDzfGVRnBMmxHKvbNq5dR1Stjja2oySShK908yQ5CQHnecuri97k/MPL8oxotiFAOUb72eZmJCgvhH2hHvX9dnzHPMfMQvy+cXhFpbWZDa41wHimgmZCq/yhzb+kT/o88hogVLeIk2laZ2pXowUX6+ZGb3wOWFR+mqzuhGLUqS0kxISlJHORJWzBl1wnlEtBUAZvMS7WpMQUlJCWdnZzMAcU1pKR5/b6pJRO8y8/Ev1m1e2iZ1dzAY7LKmogqhwB/mPw0Zn/tz5rv3kgyogGCAcdJRWUMGvrlxqSmccYrZhS1QQCxhyN9nTTIfypp6jZvoWRcuAwpzldm5N4mrMYUBcAlA2QCVWnhXrQC/u2Lzl1tfClY8EG5tlVA16kqpExZEuqEbH3JT+rDKNYcB2JCPEoFumgo7nRsRTCOEn/cdixeGHH8rgH8LIv9eNuJzAP9l5il/qFl+5yPh1acjaJjE3C1QYQAKKcrO2gr5iGvTKc/FZ4zOI1rLPUhajVGMDgXqXR+KEEq7P0jjklL/ooPxdtO2iz/iJoUkDO6NrrssTUNlcVn66Pon+h99AhGVFBcXq10Bk13ztirsHnne4DFHytYWU+li1JMCktCEcmX8sPVz4o85nYi2eouLVWama2iqTkR6Tk5OpBGT/vjUqToVQDKzRkTraw/Lu3BKcj8fSMqu2k+YmQwpaUFb3WgA/famyDCz8kTdhsvfq97AiuYis4vaoWQpOSFeaQn4bieiZwPFXtXLLJBXZNpzNIjIzLH+1adawCYmLpmtPT3suIeeyJg8f2BauhDSMKkLwQiW2Uujjc3VvCzcOFkDUICSXs0sl8yAotEXzRXmrTu+eY6I/JOXzNYizdMil9e+ZhYXq0RU+mLfqWdMUVP/wU5VYWYT3QyyMMAExcFvtFe4P2qpyAMAKorpKTGKAUrETCFZME5M6LvyeGfGJsmc/HbzjgtrGqohVK3HZUsUZpNdDuWS1FFVzw+dcQ4RLfFysZqTk9Pl2lb5+fnsAPBFa3X26/VbiFRHl5mtCZbSpRkv1K7/u8jwVOauLnQUWAASaYNLNlNSwFa3QLYaexkozFVIo49aWlu+pPgExUTXuoiZYAIL+XTbVrEz6D8NAEpKSpRowLEF4dSHa9bk6CGdJHWZ85lwOcSAsCh97vOXH8nlQgXZ+WZBh5pszKzMLC5WrTnmKkTEpVMqTSIyLs8Y+bMEqdRJIQRx1+YoQCRMpstThl8SRypgOa97T5kGAKGgMtAsN5shjZmpdMrVht1tctdVYF9zc3IMZlaavKZYe9gZN5/h6PM4JXoUmIbZfUlJkC8U5Ft2LM51gIC8vFg5lhjFTF7C8iXIERn9xU2pEz4SRFIyDzk6LWvE85UrWHFqoid6PEnJpkMoeSlD17088LgriGhhVxzwHamgoEA6QPhn9apLqnzNIFKpa4DHJlxO9ffuYev/c9gxr1Bxf3XsuBLDyyxQUiKys4FI18PdGo11OaGALn7LbGEed/2ORa61Desg0bV0aQLALM1BKelaskM7CsDshOxs6njL+mDz4WvDrbAqBnfZd0KqUOk//Y/Oz514sb921CWqNzufxnGhyEAuPYoits0zZvRhcgDwIR/g/DgA03TDVK3HoUvxt5IlMRQ8Xr8+vkXqDiIK9+bBV4hgSh1npY/gV4dk++xoxH2ibkTrowKi90ef9MB/Gjdc8OfANynSkJK7IZyRAFjXqUoEs0IsxxLRmlidrxj95AGFAEjT4LEJ6ZiV2K/aZl1jF7bVMgsFPSmtIgApNEVckDx066sDjzufiNb2BEwiFGKp0KIn3eR0gdGNYCEiHJ+Q9XSkcZhVEr8AAGQBgDTViXo9OAjAyJM2f5bkNGXaOE/GkAmu5NM9QqQXVCxLerBmZYJgBV1lRlYZdkGbAy0Yt/JtFgCmlj6+6++lFnbJIY7484el99E2VO7QSVH2O1lTBbEhw/TbpKH+81IGLzEBzMvJMeZ+2/TmAHDY32rL+t23db5ycebYw6Z6MnLebt52eKupK3dWruhXLUOAyVajrq7OUTIKG7d6XhmePRTA+t7sK6IAMKWBi1OHMbD/ByBSS42INq70NTzGDudt0vCb3bHoMkNAstGS7EwZuLxoFoA1U0sfV9CLvqIYxegHByi7mbQJ2PWXPmnemflKUzlBcUiTux++L1kizpmAVwdOv4GI1j60YYMzhyjUbVPHbud13yThdLeYZqR0f5efVRZsWs7M8UfXfO5Jqmtz5GWNH3BsXNrJTkWbfPLaj1JmrPlw2NCUtP7fcDt8ZhAfNDcAum714jBMAArL7vqWCDBYYnuo3cpSbKvchRdTbH5cEQrE6SyBLgbvMljC5VSIsRyAwcxpU9e+6bgubezQUXEp44a64k+s0oMJw1cUpU/ypI1f45JxbYkJeCK4E0+0bQUMG+sNEwB1KzyaiIh1nYcnpCcCOALA+mxAFPQSs5W2uFIeaiUbX/abilDGzCzOXv95UTzTba2SBQR1U2wiDrKJnWGfkwCUto2K5aTEKAYoAOCwIqUYAE5JHlB9lzkRN67/AprDA527xwcEEUw9JJ8I7LyDmRcT0fYemgWEbaaZkeFJSG1prWMSapeYATEJDutY5Ku77c6K5f3WN9YNbfH7ULz1a8XtdkPTNNQrYWwOtOHL5m0SqtN2YbCde20FjspeCFSIU7U9SjpH5deoU1e/M3gr2kCkdMmkxoCAIbGwvW7U3yqXvx+SctyqQHvcNTsWKg6HE253HAwp0SRC2NKwEWBhQFEBZhIWXBMASFLQw2AMFppGABIBILsXz6rBDCgO3FmxgurNgCuiae/f+uTDrhjceF35N3WP+ldlqFDY6EbeIxETmyYmelIy1wEI1j0aA5QY/bQBxTLBKKgPB1GjhxywGEp5lEWs+88mIYLBkPxzdenh7X7/S8x8MhEFe1CpNQIowxMTEoGWWrOr68AEgiHxkb/q+I9atlvFSBQFujTR0toiQZBWj1lBwhEnDI40reqGL+O7JtN5fRIGkJDuiOsLXyOIRJd8RBIgMGGBvzZ9QaguHWEdEBoAQPf72BfwmRYzFCSEUzBgZd8TWZJ/79QqYQAUCoeB3Z0/e3fxiBDSg/xy46au2jyZmUkTYufWQFvx59yUt75mpxSKo8uh8QQi1nUcFtdnyHbSEMwrioUNx+gHS70S5SWZIVSH+Ka2HDfsWHiyw2L0OwKhYIhIoCeV+5gZpKqirbHRvLlh5XE371zyRKYWx/vTM+M7yCkUAbCFD90xOYmwKVVW2O6yaK+oECChMkiRYGEc0KKFxD7TcPC3RgYAiE8SWioM00KHboEVsWqQVEXUVwhBIKFac4RigumA9FJhBqkaBcNhH4BlvQ0oChFghnFJ5miqPuIy0ZWH24KMYjBjgNOzI8np3m1F6/IxIkJYR5YjbliDDDsiWmaMNcXoJwso1tvECukS7zbvOPme7Uv7A6h8rWFLISclwGQYPeMtDBKaEvb5jfvaNv1s1roP7/XkFZl5RUXi+5y7BITxPbSZtVGDYJo0OT5jvQlg5rcNQknJmjMDhs7dLW8oATLAwsDBZ3CCBLNC8q4Bk7fFk1hvM3LZqwdfGjg1aQBgBad1l0Lc7UR9ex/1MDJV9ygA8TGWFKMYoEQYv5SmjHOI8fHpdwHARalDHpuoJAOCu1Hzo6P9g0FMCvuDxmv+qptmrP2o4PW8PNNb7O2u2e4HKwUqIMkw6fdxQxpLx531CACUZGebHeYVlxCfoIClJKIf1FyJCKahm5rHI3aE2v8TBKO7XSq/6wi0mDp6eH6MniwvERGY4SARjy4GB8QoRj9qQFFIEe1tTfKZwPaLARxeMGDKN79PHv4YuzRB3+7e2HVQIRCZrHLAb36tBO/YGWy/qSCnwMCS2dr+PqMUpbvnzj8cWCEAAsRgaZpmWIzNHCTOTBt0oyBqtFsccwezkBEOhwGmH0yrWYIVsszSDLlTErVHUo7YUjBg8lsmMxUi94AogsohgrUcCxWO0Y+AejXKS4KJoZgf+Wvibt6xZIbJvBLAn78I1B3/kiyfgEDIrtTaI1ABmIS/rdU4esece5+t3RD+ZeaoB9k7U0XBXKMrgz1kNRAiCBAkS5aAyQBYMjMMzeGJUx7KOjr8i4TBt8dp2tN3MIuLRKd5o80NvvZmaGqytHxYhwx0qiTsco4MyWyyZdVkZqkYCkRyUqLz3vRJ669OHXEuEdX+FJL9CIj1mI/Rjw9QVIhuMx4GIEgRLe0tPC5lQm4CKQ/7wEHJ8o+DqhM/eahimRqSLM2evjxEpBuGsqOxznzGufNfF20qDnwwIud/bVysEuUY+0KKKZgS0U9MCHxvnSiE5chnCTAo2nNPZBphmKYBODQBj0eFoqKf6sBUSgxe02/cnDPi+txFRItsRrQ3t38oxGYbFCXZBk86mHMja3psgwV2zZGJDN1vjZpIwONW4HACisBgOHFXypjtC8Lt916TOuI1Imo85MGkhyNjZgYRmeAQYn1RYvSjAxQK95jxEIgSFUc/BjCj+A6ViIqZ+cJPfVWvlzbsUBVS2ewpgyMiFaqYu3ONedqQiY9dvPlL9Qk6/pE7iovV/Oxscz9CioOmYQIHoK/6Xny0bFXvZckMlmYQUDUNTgdBKCAiqzywEUZ28mAcE5+JnS2NtWX+5gXb2uvrbx18tO+6PmOfSSCxrB2MSP+MfUwy2GiEfOhlkw51ECD20KwsmJDSCDFYMhRVg8NBUBWABIgIYIlfZxyONNUJv9+Pdf6mhRuDrZsrEWy+LnPs6ssyRr90OVHroxazPZTBhG30dEP2AAeIGQ4H1ejBdQDaYiwpRjGT17elLgDsIABzcwoMr1Wp9d2CnaU3r3U33+f3tzGRqvS0ArEBJlX1iI+2rzLHpw96mJkriejNfGYV6DyyrKioKMKgvqyurw9DUR2MnpmECASFCJJZSmkwA2wxclIhRARhyFSY4HIJqBpOSBqNmtoaf1U4sLMl3O6/ZeA0eVbyoLVftlQsPiVl4NKxcSktSENDmtAqfGzgdwB+t4sFsdhHmfMId2tKdTjLHRw3Rm/3d6s8f0czlWTJkk25O5mGBAQJkDVHk02C06HMTB8Bj+ZATU0NVxuByraw0eIz/aG7Bx7lG+dK/uSMlIHLAexAGsIAyhOIAjqAG+0LXKgwcuXBAJPu9OeJSh6lX239avCqUA1IVbsVPi0ZDFVFpe7fmqY4QjGWFKMYoHRu9hBtbKpEZORnZ5vZXKyeQ9P+9WzD5sG3+db9YWPFzi7Vl9onqJBTrG6skqeIL55nnVuJaI63uFgt6KQScV5uboRJlTaZoQZoaj8OG+iuJG9ZdgzTCIcITpeSkpwKl+aAlBLt7e0I6WHDlKb0qE75h4zDVi3zN8xf7W/cMWfksT5kYimA1U6iwN8A3GlJ+bi+41cU5orZw24SV0+ZYtpVcM19KG5czKwSkcHMdaN2fIqNbT5JhG717iAQmFkauk9C0dTUxFTF6XSCCAgGgwgEAjBMUzdYyqvSRzd4hPbV/ZlTV2iK0oh0bAKwBkCNRmTevDebjhcC2cXCC8DWLs2DY59jJCpaN7cdEkA/j+Y4MVDbxKpwKUY3AIUBhqKgUQ/W69IAvIgVh9w7klNuUZEoyigjZI9jAMgtAgpzc2U3k5xjdKgDCoEJkiFATgBpAGoAIBvZZmvhBUpu6pA/lYfbx92Y3HiC0hYyzF4Yg0EgsOBPm7d7ktpeefnR7WtmXTto7Gp4vSoKCowOHDdy8PxBM8xQXZHfdZmHCQBSAQ1L7a+eltgfG+oqKu8eMHXtAEd8Y1iadXVm8LMv6qtXfaZXtnnCwvz7gCmtHiI9CIBwSRRD9QrkAygaR2ZZGXvz85Ef9RoRkXkNisxr9nNcCaWlBAANocAmPRQGwKLbuyl1wO0Rv8maKOJ84dCtWUesCjFvJbDul+aKnbpv8eL2mvJ32irbnxh6nD9dOHwPddaZN2qOnLtHxBYTkURBjixApMjmgScro19FSXs1Lk8fQV1bFUvjvGrz12mvB3emABr3KFdHEVgTbK4NgYFxuQTE+qJ8G0y8AkSyyI4WjXRbK8IPOP7/pwAoQVZlj3yDvMdPZrTk7LVsBfLMJbPPzoxL/bTWzdOFL2RKop7H3xOEMNhspXDGf9s3vs7MZxLRJuZChSivo0RPLiJ5/faFm//VuC6rO3lpxJAc5xBTyP3xH5NH3X9Z8nATqYeXO4i26ftiRF4IZHvFkoSzaMqUKRKAZdqJ4qQFBQXfYqxdKTUzZcoUAwDW6i1vlDfU3EKqw8mm7FIBeQGwlDqOTOwXvr3fEQ+cmTxwHtJQDWATEfn3Oj/bJBf1zvNu0Njjvm7PrzfItGt5PVO9hojDex1XpwpVSYm4JwfGGXX9/vxccBussmzdyyFhyexxxiHBQNM2AFOGnShKESu/0vFsOInkHbVL+p2cOOSiP275+qSFbVWu8XHpTU+NmPHmkXHp7wLwCUHMMT3le6VvSa46y5736ZUSgkgDkBDNawqsgnr04dRr/DUDLzxvDNzrpUMoCvdaBVmFwqZZJttGD1pZ9AZXbcokyjNtBrebCguFCcCAfFW4XLsE1i4JlUTEoQB+ljlm+GXJw78horlkg0kxs1rMrBYWFipgpsjFzIQCSOQUGFOnTtXtbo78XWp+odUaluH1dknTOC6+785zUoeYbIbtkpRd2UciAsygx+GcGpdSS0SfEtFKIvIXM6tLeIlWXFxsdXCMnp+tURFRZH77NEcwM+3Ko2GvOLhlRxia4mBNjdvvcPOIKfX32xdN+1X90gtlKGQSdy9qUQAMkuqgIPlWjTtnCQAsmXJ1zNwVvd6Wv5BHrnrr2Efqyxcct/mzB78R/tNl38xZq918wTG181+6dPPcu4mIJy+ercVW7Edm8ooEsjpIcQJIAbC1A59im0HWMfMlJ2z4eO4XRkU8mYJZ9Fx7ZSJF+IJGfZJ2+IcpCS8z89lEFIiOGOLcXBCAhwYevWJrpRl8r3GVpmhxMLtQEdkEE0w2Hw1sG+moxrvMfAYAvRSl6lQifR8S/P5KZSoRmSDiPMC0/2/A6420L94XFrDXAp/WqzJGFC2Qzb+oa2mWRGK//SiSGYrQlJVVW/l2JanAu2nh1wUjjlpyNS/RsgGTaKrs4fyEDVumpTCwIohMQsFB1VYkQIPhjGNmsa9qDsxMpaWl6tSpU3Vmdp+6/pMHmnR/PBnS5G6myjODERcn7so4vNqtaPPsoqrfO6BEQH1/96Cr93fl8/kA5zO7XIuffTLkdgxCMIw+wlXjb29faYK18cmZR7zZXL4WAEqnpMjvYx06ntf9Pb/dXbeuvh/deZ+6+w5+S7LSSFBvWCWbjZDVoLATyiMyvVysEtGyz0ed+quZGUOIyehyb/W9z0pRQ00txrUVC074wlfzATPH2R35IvOVNsNd1NDcuFJJTBKSZZfqjVktZFVlU/VO+buqhScmr3jlxevLvkmZSlN1FFotfwsLCxWOSPD72LjdrYJZgC0thIgMJ4ivrSkd0WqGn72zsezLwvrNF6KgQBYyf6d5JT8/XxARn5U8+P0T0oYwG2HuqpZigklTXPxkzerkpar/Q2Y+6XGrl7xEYaGSa8/vu7SKyBwLmRWwV8DSSKQdKZVUGmy64IgN78/7d9261+vq6hIi3RMPFgO9ZdvCBiKSM0tKdo1vj4u9gojYBpOkMzfNmT3HbJxBAd3kHphrmcCCiBM0bUFAGgC8B9Xsx5ZmKeD1il3zttpUc0Rj9O5FK7bPtQBbrWsiGrR9JqgzTRvsFV77vOz6fIfvi77/oQ0bnDZWn53db9goam/jdC1u05pxZ55oTL3sZEz9Rc7C4afMCE75xROWRJNnMjPl2ntmzQsE9u76rk61IHv+kbFZ90ePCxR5hzlqHl6bn0Tm7t0tJLH9ndRR27LnuAtIrHvt7+xEO4s8NzLGXd/HIO8+3r1d6xsNWPY6ePnbPlVmpujx7f7M3tdt30Kz1WSKL90yf/Cr9eu3SLJLk3RLP5E02JFolh+RewoRfc6WRvItu/BMLlbnUo5xzOp3r1ug+B/hdp8JSaI3ckOIBNgIGgMy+qnPZU5bOCuh3/FEpEeQt7jY6ke/zN9ww4wdJfe1NTVJCCG6MV+oJEzdRcrvUg9b9XDWtFsF0Xu7QAcAvBDe/GKRj2wqBTAFwOOlpbim7T1GSYFEwZ5SqX1I8u6pW31hwfYl5yUnJCtNug/j1SS8PfD46wZ5kh/9rhwNZibKzyfOz/ckl760sEU1RlNYojutaoVk6Y5ziRQD8qWRJz58fELm/YKoIjobE8Vei7EmZO3eu7ZKRt04Rt5uHxbt1oAOB3Dug9Vl195Wt6KPHwyP24VTtYz5rw+acRqhyG+HDnd2Cikegh+pW/fVFRVfTxdhlrKbgQcOELdMu+IBF/AIEW3v6E8j+zKZPQAuuLN65T+81cv6kiFN5h7W3mJpIj5OORpJJy0Yd+YcFBYq0Wt1MO3eMspkoTO7AegKkS47kVajO2c6AQSZXQBYIQp1VUVQABi2gKQQmTJq3QWAJKHh3aYdd1/TuOyvZS3V6C/jPg1MvuSUBpZK9P0dtowjc1EAhKP3dD/XmKwzqgFwxhG1Bzv7AgBuocJn6i6VKGgCcIEQ6GxsXggUQAoAGgBVqGg3dRcA6SAK6xayfcv6EJ3/YI+JAChOImNvPbFzuVApsv3G9vjiAAT3eJcsj2qnHN6eg9ujaP6AtGMXmQX2I/rwW4By6oYPB3zSXF3ORAq64eEiAGwaPDwxgzaNPfcSInp1ny17i4tVR06OMXnVezcuVNr+wb6gQQy1N8Q0hQRMPWSkp2eoj2dMe+m85AG/pJJs5uwSu58HwAz378q/3vxY3do+BNGthEsCwNIwh6f0VdJNxomJA1Yc4Yx/KTd91FwAWxNJ1LV1sncKAA8ILSz7Axj4eO2G0QWVS69skKHMo5L7j1lptKK5uclSFkAMksq0pP7+RaNOO5yItnwXqEQO1qPVa27/d2DbnRuqdkjSNNEtzyVDgg0xNLM/2Beoqg20zl8wKXf2BDW+PJmUTT6bJUn7irRBVCyGowEYBSD5lcatp9+0Y/EZKvPQYX37J35RuQWsh1lRFGnqujl44GCHXtv4dtWUS8+7sLBQKer85e81QCEAMwaMwKaayppK3Vd1R/+Jn1fowZKKYLs5wBmfdGpS/5Er/I0nP1i9Mmti6oBhX7ZUAqGwJCFET86oYEinU6NzkwZteHnIjOkkRINdx/OAayiRc8PMR2asKnr0ssSBfGxSxj1ftTVMeaRh/WkJUjh1jZQhWsKK1WPO+iMRVe8CFZshM3P/s7fNve2Tlh3HOHU4mKWIE8I/f8K5LxznSn+wVoYighEJIimZjz+tbv7Doi209YNhs34GILnfmjfvrw37xrhN1kynQxxB8Z9/M+7M64nIfHLn2tG1mvHfeyqXpwd1Y6DOZioJFQ42Q2Pj0jbNSOwXesS3kSYi/t9LDjvnheySfGVuCWT6nXfL/KoVl1y/bcENUggrql8VHCfUNc9nTL37/KzRa3e9N+wVChXIX22df8lsWXHTTN1TWjL69N/cU7Vs4l01a/6uELJUA9Sa6NCHBemBzYfnvrgl1HbptnD7jaOdiasv3zJv/VftVXlTUge6CtLGzpmVmFU4YmXRzbWKMTAFjppt4y64SiHaYjKTm4j9zIcPWFF4TR2HpwtDkkZCg0LEhOqigcf/7rS0wWWW6ZWYwUpZqPmh0xsWzPit6P/gzX0nfHRbzfJ7/1m1epJLEvk1pksThnz+zJDj/kL5ZFKBnV7LXgEqkMw8/KTNc/K/8tVMdOqshJn1kBP60a6M1fNHnnoLEVVGm9yY2flSS/n1v9ryZa5hmEIVwgWHGgbom9f7HOM9s8/Qai97RQF9h7m9I6CcufqzQR/4dmxlQaLbgCINOSalr1g76qxfEtGzu+z/e5Oki4pEfN5F5lmbiu9/NVT1F25tN0lVld4I2RAkIM2w0Tc9U703cex//y/zsN+dxIZSRGSi2KtqOQXGyJWvX7/GYfyTWvw6E7rn2CMCDEMCJlF8AjFLXJI+AuwLblzQumP1fUOOazotsX84IE2KEwq/3bxDXLXpczHEnZY2yZ12VN/k1Kz/1qyBwdLKN29vlxAKR2qfEQiCpZGYmKAWpEz49Pd9xpwNqxc6740JRanDyddu+2bxYw1rh6mmYKPbzJfAUjfgcKhQCMekDMAU6fa937Ljs5qwvxEkYLA0dNOURCCXomkuEuqouKQhU91px7Mnjh6tLrNOSTAI6GEDisMqEwBAELE0gsaEvkN55ZBTziCiOXvRbnsNUAAARtiA06nC4di9l9HGTQZgmoDfL6FohB5Wb7baWZpG3/Q+SuXws/4tiK7/Yl9CV+8DimZr67dMb1749683r4YQDkiPA3A6rLm2BQCXA+eoGcveHj7rNMrPr8sdN47eyssz/1G1+sgvjca3PvfXZbVxGA7NCRMM09eGo9KHIK0t9OQHo06+DoBOKBIK5Zm/3/bNzf8Ob7/nSGc6fhU34K6PG7dfWuwIDG8ygwAJwOPCiOrAvI0b+CTKywunLH3xb60jsm41a+qBQAgiqFsii0JAcry1J31SMWhz/R2VEy+6y1gyW3NN/a0+teydZ2rixBUbW+uAxARAUYBQEAjryKC4qhf7TLvilPTBn9paFrsBfrhmw/tXNS8641rHUH54yLFFfUpfOKE+0ZUGQYAp4eiXgWN2BO78ctwZ3ncbtz11VuOiK0eGNYQVQrnZCugMB6kYSa5AmSMYB78OeOKQ6TOX/Nb0zCyYerZ/xMrCXzo88f9d014Xh4R4QAjrPQ+EAJboD2fNzrFnnUTkXGXvUb+rtnxV9nRwa8rJambDhkBrc3kiDQepgN8H+PyYMXQ8PI1t//5o9Cl/ymVWxubn8/0FBfI3G7+6qNxhPv6BrzoxxDoQ5wKEAoTDgClxukjbuTPQNmXlEefX2YxDO39LybsrReCUza010JJSEc+EJj0ASEZyiDc9lXXkpRdkDF/i9XqpYB8+3G855RPdgsiPnnUWZN5Vuem7+TAxM0sqhPLy8JneI2vW5NxKK6f4W9oMUjW1p6AiWUIITa1uqDN+H1x63fXbF20vILrPy16Rj3yTvBDzJ1zwdN6GT6/+zKWPpqAumboRtcMMUlRBUFj6gxJE/Er5csDpGAmXa+QfWsqQ4NsIu3QT2kwd4dRkbDDD2NC8CagNm9BcVpdgAEJ1Co7aBQbDFEJtammRfwwvOXmL6Rv37/5Tl9o2T97b2s4sLlbn5uQ0TVjx5j8Q53ncaG0zIVSBbiXhMUhoKgwp2QC+qdjE30B6kJh0LlxxUczY6kwZYEaAgYXhJiys2AGATahxZOvbRJpLZd49R8lMinCITYFm5a87Sn/LzMX5+fkHXGIXmlNlkyX7g+jUDBC1J71TU5SYBSmDwyIAH+5jANm9UI27GxQw2n0SYUOXbqdzSECsa/H5y5xQlFbJJwXbA4534msnXbSp+Dp3wV13FHlvF9du/3rE1nD7+283bMyAwch0ulfkuvrO+ailApnOjNwFlVv6ITn+V32WvbawbvLFT2K1VyHAjFNUFUFDLqrfZCxWtt/ObgFHswwNcno+qdN9QSFJGetJfd6Zd0IYANaPP/+Tozd9PNTnDzt1oomNCg2HBBKgtKS185dVYX97iCG3h9vnCQCOqdfos+s3XHld48or2msb5EBXiqG0mZ+Wh1paJnvSh9QY/ukVaOv356qlTzDzFMqnRrCXQAXMgEDAlM+2bTJfadue1+QiuFv8tSla3NeNwdbwqalD6c2xOXMIQF/NDUfQlBt8TXJsXFpgpiNt4zKjYUKr6Vd2CFM5QctYUk7tYza3tLjrmSYZWePTAPg3BZrDlw4cGce+QHBnc6CkzQg1wDQC8Q73Me0wRle5lT4PVK//HzNnkxXUE+dRVaDVLz8VO9KQFJ82pEVZuSPUuHpmUtbk8vj40fO2rpRZauK5zOwlojYAfMGmktOeCVS80tTQTHC4cJgWv6GyKbiiRQ/qEzypGexxnvRR/c65ctovfZRPRONy6R/Tb3/8c2o5pb2p2ZwVn1Vb3tz6wZzRJ9ddsLl4xgZ/87TmROeI3+1Y9DAzT6f8fN6Xw/5bgKKztN5w6knXIIrkPIj9u53YHqWfmc9MinN/dRMWD29obTWhKD3WVCQYKqlKW3uzuSi+9R5mbhRET+ZzvkB+PlKImt+p3/b7OZX1H7OAtKNtqDsMl61SZgQAquYCm5DSF5LVbdWojkZpIkAoIDAJqIIcmmLw7i7znTIuZpBQoJDg451pM/4NLM0tGkf7SoObl5NjeL1ekX/4ec/+u3L1H/5G68Y3t7aakqhbmfP2FITFYB0QDDZ9QXPX1KL7jRETQBAACS1OgMiao821O9tXKYQSaGvj18JbzxyaHJ9SUFBQH9GeDxRXtcuviL1WS9jXnnRZYybACJkzskaqJYNmPahZ5qTvKzveoRAJOFStn+JcuHV87lluojoTwHU7F117f03Zf6ktwF+Iqt+cseTVf74zNa/l7XMOu7bSqWc4WZPHJ2bO+2z0KSdqRKYBYDPze4nLXy5pb/fLqzLGn3k389MES+symU0ICE3VBAni891DFszI7HvTbZmjvzTsJf4Au1E10+H+EsCXiQC+8TfccFHt4vtWN1fDLdWFgSMuPsuMcjtKAKcvfDPt1+Xf3BFWYEIRYoDqemDz+HNvBSRKmbWTN362pLq5fHxmv5RBAC5TC+jBI87K0tYA0oQ0QCT8Zpj9knGqO+udq/qNvvWqtMFlBoC3opjBddu/UXVpCIpPELM8/e56ePAxTw9eUbS61S36qgH+as7oU86+euv8Tza3+6a7QmifFZ/p+DsAcdTVL73EvO3hsNr2hz4TViQA6Acn1nPwyqGrX//PtvZWcUProiPmtFdMALAUgN6gh0wQkcPtNvvo6mtbJ154nULU/Dlz/0nrP5grhGN4SKH+p2/+dCqAL5iZ+i9/9aomJ5PTGWeOcSbPWX7YWZe7iWoBoMnhwV0Vy7OvHHZ6CeFKAEB22S+Ouqm69DLohpyeOrDt85En/yyOqHgYgPFwYcaGd5d81L5j0sT4geMBTEVBwULk5yvYiwD0LUBJFapQiHr28jCgWJYaDwCU7B+oSPvFqmbmUwubt332cah9iKKzafZC4yEDTIIc9GnzDvFb/vofkvl1ImpmZioqLFTOTx/82e3bS//zr8CW/ws2txomCbWn/d8N3sV8BQllbwAEE4z9NS8ymBVFEX0cccMtR8l3R6Pl5+fDNnFcPM9omvtWW0OSRnFSZ1P0lBHLSBuTXWmN3+bEMsKM92OOzAwIlbaGWpRPdlR4ANTjx0TMpvR41O1NjesxCPcahbkKDn6oMO+SHw0TcKhC6OZWJ1Fd+MPfOwPt1cZ9/ad9tLK9kT9p3Un1RjCtSPpdyRAtI5wJ/Wq4iRVm9FVdYsCy1+5JWfiU4/J+48ybty/JCob8pqIQVvqbTgKQCEIzARCSBBjQBalppFW9MnTGmUTUiMJcBci1zjHlRRJh4WUWz5Y86yiv+1Cfunle/FolCFIdqPEFgvBKgWyvAwlZJqZUMqjA8CcnDjeC/sEIBXFZ2qiW54fNuIu8Ugy+othBRMHPmnfOLg7W//eL2q08qbn5ZzrLR4hId1unVIGUIIdDOcud9eE7w0/4GRH5do0tI4OuTkigx6dO1Re2VIbg9oCcCh6pXrbx9REnNPgWPB5ypyTi0rjMejeRb9b6T9ugqNARlksDVW2Rd4CIvmLmLNSUFfyvetWA7KTBE07Z8MmY8vYGt1CckuM0z7y2mmEELB2y6g3PtkCrBqeLRMho3T7l0t8TUTOKvS4iqsCCpyrgiRvewIb2Uc3GVHs/x1+UMeKUB3eWsssR3778sLN+SUS1kX5RO6deo/8yY2RJdHDCCQlZ47/iNmEaPk5h8s9Y+9Flw1a88XOdONBgGoHDhSNeGJBbHDLuv9XrxhGwML+khPYV4GFRfj4BgF8qDt3UqadvjWIFTCmw1Pn9VGxIFnKhQkSbRgX856SKuAZTFYrg3gknlmAyTZP/V7UyHAE7AMjNzZVmYa5SMHDyzXF+fa3hVlWWhtGblXq5k6snUm5XRmatKytEVHatZ/D1kzKHqXrYx8ohWrSC7GiJnVroR5UxblWbNpAMLXB0QsrlRNTuzS3kg12HikpKQADSlr2UsCjYCCgO1EldD3m9YkrmeEl5RSaAtp+njwhC6vAI1RgW5+QmNp3j41MmmsEgBUwDL4Z2zKjIiLuhrm/qH5/Umq//Nyov1uM0xfC4lQ+at7qp5N+7zr4ESzADqoYb+47/mIgawV4VeUUm8vJMWFFJu9ahgEhuq/tQj8srMk2GMCPaO5GkO0kiIcvE1Gv0CBgLYl2YkiEII1xJ9QB0upNk+ZDsMDPTiUn9FxdkjgfCQVrur59w5Nq3EjsCLKkqxrkT/kVEPiyZre0aW06O0TRliwSAV8acIlUSYJZIcyS5q3S/AwThIQ33DJii+JnJSYr9SKJ0kSRsQSnzl1u+fKXvqlfX/z1UfseaNNeVj5rbpy1WAglZ7hSSUmc4HQjohpMjliIwQASTpdzYVhUJxzaYWTgUlWAayHQnIjfjsEgLa09fT2I8wOSXhp9KSuq87BWYeo2OqdfozEy5XKjYFhgAwEhP8jCTJTORfL9tW9aXrvZfrknkKzcmi+uq0px/eTm8Y7QkqdZ5FPFpe6XxXQrCLg2F8/OZCgrw/LDjWxWQ+WzdGlVRHFaJiu46qbvBN/MozywuLlZPHpOzcm7zzosv3vnNm9uNZo9gFZJ6lptAROwQKt01ZDpHJN/Iy+xlLxNR6N8Vq08NucTHDzVsPKyqsdYgRVXlIVTPgUAUCIe4wghUANjvsk95RGYxs5oNvPi2J3XCL+JcfynZUqYrapwiWYpDZYZWZF4AeRljjNeGZ4cjhtcfer0mhQimHjTGDxyu/S9xgvfkpH6L9hZOf6BpdnYCXQPgv4OP9d3WvAab9SYoYMK4cVS6ZYeKwkIJIOGBqlUuEg74TF3dEraiDRv1UI1QtTHCNGiGSF9Y2ejbtN7XkJzkTmm5IWOU6kvtz6yQuVZtnO84sqkNhYXKW3l5pqFG5skY4kxsZ2Yi5H+HZpYLE0UIQ4ZBApE2AZ2ZStMdjjgpBIFVeLcvTLgj6wiVX3sN48qKlDVrisxFp/132LutFYDqQAI5KsfWpPgWd1SlmVHSXs92oFCnY+unxOkRtqZYpm2DmVmCURX20zh3Ms9Y/3ErhAJA5zJ/LeJBuLb86/te5bqLA2EfRjc7lh0Xl/rYB3XrWp4bf0Zi/vZlN1Yq7SOcDCSocWY9AFYQcAo1FAKgQlEGJCS7iIhR7IWDSKqLnwNkGGck9MfTmVNMAnBP1WrzmbatgNCgSmjh7GyNih4NzywuVufW1TEVFQG5ZYyiQoGMDAKAKiOwUzBggsWNfSZtGai6F1abATMkZbvG5KQEQlw8pw93Z228JD3rCzu3Zq/FWzvLlDeOj89UnqtdDQGyzDHdY3y7NJSuUk5OjoHiYnV68oA5q1rrr/xZ3eKiFbXlpqq4RHeL8KkkYIb9/Kuhk8QN6RO+IqJQtO26gAqkl1n8H9F2Zj57p7/9g4c9TaPYb+pEQuNDoPeRxWyDODIti8Y4Uz4DgLG5+98aNxswKT+fUFBwQxWHQqf7/Lcuqy0HoElShPi+CyERWVFkQ9P7qVelj/wgWXXWHtxSLAdMM4GpB8MTB490vJgy9elp7uT7A1Zy5/eigV2NKXwNgItTh4b+07YZm6WJTNXtSrRCtAMagBM3fHLaCr2FQOBx7tTGf0/INTUiY8CKwrVSFTNcpoaTE7M+uaf/EV4AqAJwv21YlwACEWmyMFdRABim3DVXJykJipX8t197a7JVwsJq4Gf1YZBto/Y4rKt9rXVSD4cBaA6nO+XUtR9Ppry8b9YAZjyAE0vPubCVrIinE5x9PiyaOiuIXCgo2tMXkAwX7PDoTscSkruzQlp1wxiguaX5zf+kACFFdVrBG7YGQCDxQMUqH7PMunbnovMD1XWmR7ib1004/ziNyG8AuBoALX31WpBJZ8Rn4Y3R0w3Cz1A5LpeuLp+PJxrWQhNxgkCOPcxKRARSURpowCuNWxkA2tXQzsq25i3QtCFEStKfdyy+xJVX9PS8KKmTOtg8X6jfsNrOeOY2qQd/13fslQlEweh7VACtAC7dH+tJJ78Lbwi3VbMgMHcbTdjOEdQAoLQ7uR05OcYdXKxOScx4/ZMBx/1jxtBxiqH7DQXdNg8wQ8o6PRgE8AA6sfgXEMlc60XfFAjIE0aIpNL0tDSNpS4BNr9vZgvTNDxJieIiz4DSCe6kMmam/C5ogUTEnJ/PM4uL1Sxy3vZCxpG/n5U+1J/giROsh8zv2wRGDEhmThVxfHJS/+dbzLBt4fthliYnIhBDmmZYTho00vFG3+nPT3OnXhUoLFR4dxuF70fRtchNDg1ob9fHuVNPerlx62+x4IkpQ5e9eu7nLRV3kJQm3E66OHXIixeIlAaDmZ4bcsz72e6+5DeD8pbaFX/N2fT5DcMXvTwppfTlw1u+emTipdu/vvTlhvIbJLMWLQyQiV2VlTYEW7q0n6qwP8kMJwlFBYA6O+KVCqTX6xXLxp616RhPxgtOj5vCZlipNoP//e2WuTOw4IkpL9Rv/b/JqX3PQCgQHutIwjNDZr7pB2PKTVeLaO4qQGgw/fo+x6JaX2/VyCEDRHCQoEY9gBPWf6SkgyBtn4xKQrl6wMR4AK5MlzuBwgYRw3XOljk5xjdPHXX+pi+mz9j4xTONwhgvdNYbZRgGdjWcJQcpBGZYcfUuAQBTErLIAGCwNKFoWOlvwKXrPhYE4N+Z06qmuDPehMcl/HqYH65f/9jlm7686YhVb0zrt+SV4++pWnXWxZtKFngrlr6Gr55MAIDSseeunECeDXBo9Fj9ujGHr377+WGLiia1z3tsbJ/lhcedsPHzs/9Tt+nh67bOH8ORuoT7Y/KyI60UJ1HrG03bnnglo/8dO2uqdKFqjq6YfKz+GYAQuzWUKd30ORRQjoHCQiXLmXDzzlBA/GwE3VC8ZbWpKC7rfO6vzwEEaRj6oEEjHMdSwnsuUhYV7sXcUGQlbQmFaKfJnPOf6jX//JvP/+tGkpD+oElCCHmQLTAEApuGaapCHexI8l/fZ9zviCgY6drYVbMfACOXC5XxlPoIMy98sW3bSzfWLBtZ1VBrClLJrk11ULm4ApKmlCZSkrVBhvIyEb3jtcpy/OD8KFZ4I7FpGqbicqrDEG/OTpyYP0y47gx4bxd86PTvYAkGSMOH7RVJH4YqHkWcCxvJAHRpaImJyl0JY3be2G/CvbezpJkoUU5Iyvngkao1f1+a4b+1tbFJebu94j44CBQOByguIe7xli14XWnBWZu2b3xu5Iy3sbpQAYrMRhmAlLpBUHHjtq/NrqxlqxHSWJgGkUDADFsOXttkAwD5+flMVMDMZ96Suezlc+vccWkrfPWTVkjfXMTF4bydXwKmiaSMfhisOx7M0pyfe71eUTC1wHADEApJAIYhdQRFeJ95aEJK28wlEQ43GQoIihCmCWmsDbaLZDDCphmCIMNgGWmYtmNZY/V8TkuZ7m8OON5tr34fcQ686a9AUmISDJaQjFBJW5XU5j8e4cmyyQjpAIxmMxSq8/sDuzQ2AKYRNOFUDZhQoDolAPj5QmUuTv376es/mfZJIs/UW/z8eHv5vSACNMZfa5YDThVxcb6jFFW8LIF3BFFL2oIXfuWJd30cVE33qnBLLjmUXMAR3CqDri1tO/BhQgjJTc39Hhk6/UIUF++1eWFnGooMM+jM5EEPHYOECulxOqRphDUS31kHSoCgkYBKBI0EtYdCJgB/Bw2r6yc+N1dOWjJby3LG3fhG5lH5k1IHCVNIoTDpyn44zRUQJMuwTNAcF1Payj/2HXddiG8XufuIrCEiebtVy6ftz/3GXb3+8Nyzc1OGruEElyIFE5gNBSTpAOOKQgQBmMyGocbHKX8bdkzbVwOzLyaiBcws8nrAbIsoz7RBdfHPEwYfvXnE2Q//avAkRbqEYCmJpTRUEgfU3mSfGSZmwyRTaMnx2m+cA997c9QJvy0sLFQORg5Kb89HJSHZNHWTdUpITlT/PfDorRuOyD3lyMT0AgJZvspDR+OSkACEFFlwNp+s9WmBpoIJcLpd6i1pY7+5sd+EWURUw8yYSznGdC5Wf9Nv7G1f9jnuxnGJmdVwqIAiwPFxcRznAEJhJDUHii7vP2IZAPKOy5AM4PykwXJc1hAV8U51iDu1zjqEa/Z5vLwZZSQB/Cx9VKBvaobKHpc6OT6zhgHM7Kh5W7kRtWWTLjjm8rgBbx6ZPsCyPQkBaAInpg6q3zjktPzisadeH/DeLvLz8xlsMYFmI9yKRLc6qe8Q9bqMsUHLe9PxhbH+aTL1KhnvVIek9VH/2H8q+diA39STUlLS1PljzthZDyAMU0VKoqqzTJwb2NlORPp9A6b9aYThXCtT4zUQASphmiOFN2Sd+PjiUWf8bergUc44xSGuzBzfZH9jYGZCHxnXp496fEIf1wC3uw4A4m1T3ykpQxSkJqpJmoPOTh/WyACuLr1JEFHzh6NPOWuC7nyaFMHQVECQleDpUJAh1S1vuCdcZTa2fXwHs3itsFBpOPqyL6uGnXXaRZ6BS4WmgFUFiPe4yKkhUdPwuGfc8q2T8l4HAM7O3s9M+V12oV1lGU6+uPzLFxYajZnldZUAKRKKZnfL7eR9kCbB1AlEgGnwrFFTxOd9pv+aiJ4s7mEWMAFgO8xtla/pghM3fPifGrfIQmOrhGJF95JdOB0RS13Ek2uGleSMvrgzbfziezd8fVrlUb9oiK5FtG8bmVUPCwUFkplT7m1c9ys1ZPz5rra1fVr9fiAYZiiqhJWsaPXCJSuclrsIHLuWkVmylf0I6CGBBA8NdSYg29P3y6f7H/0XIupVZ270szgcPv6Jlq23/K9584mbKKi21lUDpDFISCu2MtIYfv/n+C3QZys1xxK1TAIMgZQUvJpxdEObqT/zq4yR+UTk+45qp72aKU8MCYqyz+/H3CLzsh2yltJq6AIqaEjmQDyeckRzlTAfvTx+4CNEVJXLhcrrdJF5KPjiojLl/3LMji/uX1BfjmmO9I8WjTv7L5PXvzdhZlzG0AZTr3h+6PGv2vftkSfDXhZUQPL+8gVDZ5u144+UCX3jFc1VzoHGza3NFdsn5ZbokaW13g1m5swH2jePv2H9p/h4xJnLT00e1Phd+UWRM8DM6Rdvnz/506Zt1HjEpYuJqNF+5bkz3pWpuvB6U/kJd29f0i/TleD63KirfDf5+A1T+/TZFGELVpkSy2132fo5/Z8PbBn9eP8Z+HX66IVE5COiPZ3/duSht2lZcmHlppnnJA7R7xkw9RsiasKSp47yxCd4SrNOXTkmMbE+aeVLw0R84shAc2MwOGnLlwxLiPiwtTLjX20bTuofEp5N4aaWm9PHl5+VPnwRM2tFwZrsB7cskl+PPesrIgrZ8zn8tJpvhj+QOKZusjv9qzBk9JocFr/l3QGT/dI3b/y5i4jIiNT6IiLWAGSUvnTMESl9R8bpLJphBpcFGpovTRm08r+Dj6vcY6F3l9NxT1/34WkDHO6Udj0c3B5u8WU6koKfjz55PhG1dsWWujdQGfBx885blrXX/mIB+9zvtZSDFAdcdk5FmCVcQgGbBo50Z+Lk+L4wTROQBs5PHvrhYa6kGwCsjTK19IyKi1Xk5Bg/L587dCf02zNM9ZfvBioQtscA0zZGCQVCUeBgibOdmcaU+L533dhn3AMKkd/sRhJZYWGhkpeXZ9qF8/qdtuGTn2U5POfOM5qnbw20wFQUq5RIKGiAGVA0EkIlAojBu/qWCyJEV+i3MjOYpRlmSGkdb6dLpTgXyDTw86ThIPCcP2WMfuX4uD5Pt8FEd8xc+wOc+QAVEEkXgADzCb+pW3ZOekD/+TOBipQaMwhTSqDdB0hTB4GgOEghxWLA4F0vX2SOkRfXMEIMlmwlzzNDKBriE+AkYIqnD85yZvj/1bDusdrxef/WiHYa2K/S2b1besWpWeVGAn57bhopQiMwdyzCYpuJJLMRtuajqhrcHoBNZCf1xzHStWlQYuarv0kd8aJCtF5GvU+HiiYVBSh/Om77F//6unkHUgy1sHHKzy+K1GAzOjD1js/IZVaK7FbNFMWk7YRVqwXq96CJRY9XRO1bdJ2r3jBpcic/71PbsoXYb43pABQEjRaEv/V92LN4ZMfxUQfHPXfAhG4BSvQX2A/LAjAtvfSFawKEuOLRp7JH0cS/KlfxGSkDzbHOJDPT4VmcqjoWANgIIARg24E4ULl2wcAUAI3M456vXX/1rysWHe5mEZegqAkmw/RJw2eqIvD4gCO/viR1+BMK0TYJYH96iexzk4ryBKwYfTCzswKYklf23lXL9OaRI9T4wSPS+w3SVBXzmytR0d4AGNKqUxRJapSmdUVWXSiApuKU9KFIdsRBN3RsqK3avln6t/WRyratky6+H0CZrUGQ/bIcMMZUyKzk5RNHqqKazP02GG1H/3rTvCvX+Bv7HeHOmJieka6YhonPm3aiydcEsJXxDxK758imdbRY4riMoch0eSCEAlVR0NzYiNLmytI/ZR3e+tf+k54F8LlGVGHYL3xEmvuuc9tbgCKIkK44V6eqTs+ErEFDIRnzmipQ01Zvza1j7WFVBTQN52YMg1PRUFFb418fbFkb4nDVkskXzh4Jz1dE1IyuzeegUsRiUNRQ/pc/N6y8b3ugEfG68lrblJ//jD76g4bTUnW7VfM+fT1eZlGAIkJRJIrINhTl7U5QjH5/8gBRhCLso4r0Xt+9PBSJImC/PsvMVASIvMi4cgEvcnlvVgmv1ysK8sdRIXKRa3VQ3bfWhCKRC6AwMpbCQgW5UWNjrwDGEYqAPcCCmVBUJCz7WS5ycy3Tc/R4o9ecmRVCEQphpVN8S+hHEaEIoLy9aL6FhXtG2eYCQBnvDVQjdRUj44t8piv79Z19LCKS626fxP4XHTpgkpnXK4ACRMq+KwAShIYmMxwPwEwWWqCNjd1OEjuqpjdebGamqaWPq6VWUhUAwJbqB9rxB+mvNGwZvTXQNHGwO3Xia/WblfebtoIAOillMP8sdRhMMCsg+KVRXR5qXXrPwCPXAtgGwAeg1EW0I9QJAziIUp5in1Qzet4AjgUwHMCQooYtY+t1/6RENS798fr1+LKlkgDGBWnDcU7KYJbMYDaNS9NGLteEWANgC4BaANUA5u2xF8VelbPzzS7sT+8ACgFOFhyc9osJsPKSZgDIeqtx28Q63XeMW3Fm8G7FhCQ4XKcH11YbwXUPDJy22Z7LOgBLFaJd7dlmL1miXT1linkoaSXRNHvJEu2aqVP1/9Wuu/7JcOU/K/V2tDQ0z/ZNvfw3WDJbQ9TZjtH3okH2qGHZ90m0nxO0Qp9L8gXqxnFuruWkKsoFvLCiLcYhm3P3lEoOqGRGAO5gFmsAKioq6igVEbhQ5AIYizIu6AU1d29guwZFVNQJ6idbAKcBUP6y4lMl0+kRN46ZHhljpMq7kUBCtneULtgrUALB2fnyQK/j/syxpKREzM3J2QPQHABC1rlQ7TkKAHjgiJOj58e0l+6VuVyo5BYBubm53A3GS/EQ/HDdui9/WfH1cT0BFI2F/OfgKZP/0GfCisivbdNmZG57LEmK4tDDUt8VbbL7L4WKF7mc/z3uV1fNQmz1MTmv2QzGNwfN94bGx1cfzG6ZMdq3ye6A7sUBqo9HP6aN2GNiB/mlsEHXAt78fNkF0xoVcqHIRe6u3lOHomRrr2+k21wEBLgLaxNtau+ptkgeEP+ndv2cqyq/OUGETSkjBStBdjHQPfHF5M6r0zlA/NLI7CkXJg9ZUYYydRzGmQSSe2s+ZGnIEJzPvTmfGMUo2nedCiBMRO0HCFR22XL3N0Bpf0n8WDYj0k5zV1vNg//9kogMIjI6gAlZLUStNqJ2+9M9fL15lGdGPnuomknsdY2M00RH5wLvvjoBdxn92d7aH4NlyK6FLwVIgllKM2SC2TR0nxF9MUsLKKLQbZdGYghBRLII46y50XcAZQEOyHy+JyamzF6yRMtlVgqZFat97g+gOkGkJS4fekKx1+vtUtvcCGMnIvmf8uVDL9g27+tLNpW8zcwpnQnLPaUECGbm+GTFgYJe5jc/Gg0lRj8pIg+IH6hZ89lvaxedKEwBySZUzYmpiZlY4qvHlRmjLIZpH/LX67egMdBmyVDBgAkikNAUhxB4d9hJM09JzZrX29LaD0WzF0TfTl3eR4vYGB04zeS87fM+fbtq5ZRJoyZjacqxXiK6MxKV1xt7rQjBD1Su+u980X7pOI5bf3H8oGvHxqcs7S1NSI1tZ4x+iCTBiCOlNR3O9oZge+1/hhwthjgSlwx2Jsx/XK7XH0mb6INVUgoA3Jc6+x12b8Wy0+a2V2eM7TOkT4UMorq2Wrri4ilJFakAMK6o6KclYFnpU4zCa+OfOuPmkyZK9zGb9JaVr1eunfMunVkdOnQ5MKUufy7LTE13tjStrcHEG3yHCgBqIHzatGXIXzYvlkum5O4gIt6P0GJmZtcxa94vqnXIKRmuFPxZHbASwIv2382eL9ku0BrvLn3+6oARVN+Idx+1tKXmFSeJ0RTTLWL0E5bo7NJOPJiZJzGzSFC0/fmcxsz9mPna4kDdG31XvsJY9hwv8dWdC1j5Rj8lqRhWKHrazDUfrsTqF5jWvcYoe5lT1xQ1XLrpiykRU0x39oc7N+/27P7I35Y+lYGFTzej/C1OLX3pd8xMU5bM1vb12c7+tj/fub9jY2YBKxly6owNH3PCqlfNeypWnMPM5OVidW+fZWbV/vd3o2uKGcue5BPWf/IFMyfvbdz7GtvexsnMwv7b8L7LXvZra1/luE1v8mt1m15XAOzLRLerhtd+7meMYvSjoHJu76czz2rT9ZOYOfqauZXb+0bfG08KcsvnXZizrdhXFfb9HrDycH4qa+Vlr2Bm9Tfl8x9L2/gmZ5a+GJ60+p116aUvN6LsBZ5ds+6DRFLQJR8FFyrwftsvm8udAzUzi5lWbahvU7F3TybMTJh9tQYAzm+eGSIWPi2x9lU5fc0Ht9s3iW8Bz26K/N/qJNTZeKILWcLKd7MabH2LqGN+h5e9AsVeFQBu2b7kdiyazSfXfM21ocCvASD6OR0ZcmQNmLlPxspXP790y9xHUVjoAIDZvKRTKSnX+v59l62xBQELDPa8d15Txa+vbV71dWFj+VNLuDFpr8BV7FU7208UFioxYInRj1FDSWLmh5j5VWYuYuYtvHdab99zDzNnRj1rKjOP+S5p8Ee6fgna4mersPYlc8rqd+Yxc8phK994lta/Io8pe6+ZmZ0dGPJeyWZycFvPTWPmIczcL0N12V+6pwQcvdbM7GTmdGYeyMzp6Yqz0y90AUgTGrbpbSc6Fj8rUfYSz1r70b+YWY1c6UL7Vs+MBAgws+qKVJUHkEoamDmVmTOZ2S06ASDX7rENZOZhzNwn0R6Zt4NEHw9gsBqHjNKX3hdLnuBzK+czM/+JmR32pcR3GFn0GqQpTjDzYczcn5kTdn1PBw0x8n97bH2Yua89D4f9DCWi9ew2w1maUERLSbPWw5m5H91FPNZnEx9oWDXw1oZVA/dYq07elxjKxOgHaa6x7cHPA7isw587RqBFpNfoFzME4LktwI3DiVp+ioBs56HEORY/s8bISB6CuuZn5bRfXpm3sXhxkV4xeYTpKtsoDptC48dHnMF7dwPYJU1Sl7xw8uSMAWec6cy4zCdNl4sEl3Pwy3pf24Nvj5z1ScBmOHL392ddu+2bn/cR2qUZzvgRTUYQLlKxJdz+xYt1Gz48L33Qq88NzWkGMx2+4s0Mt8fzu2lq4qh41XHc/XVr+huGDhepbb/vc9gKAQQcQnVWKGb90ztW3IIjf7XeyywK8vNx6WUzHxqUkjG1pd33zBuDj3t8/Lr3ckfGp1w8SU0+mQREtdArNjXW/fqlUbPm3u71irsLCuQLtZtOf7Blw8yLEwbPWqu3jSv3NVNu2vDQx+Had1ZXVz68fkrukkgJk6LGbce/0rrt0vFqfN9X6jeftjHc4iQSOD95cOX0hD4V1WF/u8JQMpzu8j/1GXc9gEYAZJ9h1/mb51w9xpV8SX/VcwQRYDD7Pw/Uvh5sb3/s0wlnrYj4hyL7dvPaL6Z8pAavHwrH2bMSspwMadbogbIGI1SVqrniFUFqtqfvGycm9f83M/d9uX3n39c0Vgw3hRoOS8MURIkaCWdAEW19hfqHm/sescrr9YoCKzqVrCPCwr3kufNz0gZmn+bue/4dlcuTpSC6Pn3MztWB5mcLR+Q8KoiaZAdnfgxQYvRDZoifAphlg4joBDiiKZJsGSlXBQDzAZwOoC3ygv+EFpEYQL/lryyrdvIRU2VCWX7/ySuuqfj60mph4m/J4y67I+vwF3UvRKQixb7A5N7tS6+6tXXdkyYxIE1MTB2AHcE2NLQ3IE1LwH0Zh//lD5lj//kXaYh8C5ycj1avKfWGNo+tb6wB4hMxOaEPdgTbUNfeAE9qJr5KOuq9SfFpZwsAU8rePWFxlnMO6hqBNr9VbIzI2kmPAxACCAbhGjYcOTtDv/5ozMlP5hYWKluGNYlSQ21GitN9lTZ4+fnJgz67cOeXNwQUBvQQEApD9B+AX4ZS/vLC8OP/GbbO1y3jyj+9c42/TgEY0FyY5knH4qpNgMuBX8aP8D09+NjJlE+bRAHk3RUrCm7WdtyBhiagPQSwsGaoSsClAYoKsI4ZSUMxt9+MY4noGxTmKpxb6LqrcuW79/k2zmoPtAOaYlUGDoYBzYmEMFo3jD11ej9n2upIEVdmnj6o7M0PdohAEsJh616HZpd4Elbpo9R45PgS6krGnpb5TNPGnP942r5Yun454HQBUgIB3apdlxQPr3vUH+/sP/k/bI1H2u+VY9zqt19Yo/jzrE6ZYUCLA8JhwO9HXGYfnBp2v/LmyBN/ZtkRdwOKiLGnGP2Aqd0GB9W+9nWed2X12/8PA5gO4B3bgoCflF24KE8AhFv7HfE/SKA00DDuzK1zLq0wgrjGPfjRm/tNeFkHwPkscnm1gztxzjOzIqhAMvNJa0T4SdPnY4R0XO0Z9sGyrJxb5veb+dBg09nS4G/Fn+pW3jNz3acz/mblJHHQNH95d9umsfU1VcYULWPDDc6ht5b2nfnnuf2m35EakGXc5gu1S30xAJjMtDPQtuLYRvzjV8rA2clwVkFVAGKc7Om/849xw1+4mLKeudI9+MUHMfh/H44+qQQACnNz5ZlTppOmKG1Ka1iuC7ZMvKq29IYQG5goE2pvSpv4yjVp4+acHfSUPDnsuJfCu81Y1ae4MxWt1RceHFZf/702oGBRVva9x3myNsIXMl/w7/BcvnXeA8l3aZIBmGS+dkEo6ck/u0e/NEhLaAMYpACnxg/adHPC2Dd/rvZ/8RJ14LPTDNfdANbB6xWevNfNa7d+fdfffBtmtTe3GloYNUNCznvH6Z4/jRIJ80RI54BTJN64Y/X9zGzVMWPWHqouu7tJNZL6BoX++5TDPkhxJZx6tCvz72RACt00Z7n6brtC9H/4nJTBVzKAXySPWH1xS9w9lzmHPP8Lpf/zf3ANfyeZtYAiyVSCpnSSYlfAyAURsW3KM36bPjo13eFBvM9ovEAbMHtwALedqKS95hIuGaiuDX8omy75pr32d0TEPyXfY4x+3D6At23/iMndo8jnUn5ygOKFUAEcufqdh7DqJVYWPeOnspfMY8ve+28fqFZhS+bMv+9YujJ12/sNteHAiwBQzLud6F6vVxTmQhmw7JUPsPJ56Vz5kp69/uM/p0Z9zXMNW09XS5+TWPcqH7bqjb9otoqYtbxwtnPTG4Za+owxds07i5g5LvKZwkJWsPzRzI62+TgAaRA4cd3HdyvLX2SUvcS5Gz8v6AsViVCQQhq+5cUu9qpY9HQtlj7PWPi44Vz6nJ5fseJ+Zu6fIRxgZtfzVcs9HS02HA4fe8+2RcO0KClla6jlitRlLwWx5CmZXPpC9bJA05DIhxJBGKTEIX3ZS/Ox4gXGmpd5+poPruurOJEkNCRB7DE25uCYKWvf92HxE2bm0pdbmHm0Yvs7hjvikbrs5a+x7DmJ0mfCY5e/MQsAVrc3TZyy7v0QFj0uU0pfqmTmeGGd25Qpq9/dgiWz+eHqsjpmTu94npOhIgkKmFk8XbfpIyx9hmnlS3xfxYr/I2vRleg1YObML8Otx+HtfySoAJwAxgs3Tl7/8SNY+QIrZa+aA5e/9qEaWWObYnkoMfopk4DVBO6nlcDHXuGhO+XJG+b86S295g/wh6UpEEe6lIvNplH67CPcoAJ/9rqpF3wlAhM8BtBs6KsAoA7ZkTpTET/WoHe2zpv+ct06KMJJ64ym09sXP3eaR+rqOWkj6l6qW59h6mGDQqC8tNFHPyQ0NEsd2fF9ny/077jaMHSsCTRNy1z2clm/VUVbnxlw1Kpq986n2fHbdQLXWkyRrLYqgbJCLTA+T39k4FG1UzZ+CJ8QKPU3tFfDIMyeouKaUh1er+D8fBCIQeB3s692nLf4E8WUEnA4FA+rL9zf/4gb8m3mSZH+6bvNqERE7HI4vg4yH7Zw/aePvN1ecRjCujql7IPMgDQBCdkcr/aZtOz1CQDKeclsrfW9a7ilIGA6TV2HUOBWHAjqplFthoDZV2u45nEDXi/NzM4W83JyjIs2fD2z1GxxgxXZZIZdKUtffMRc+JTfJEqoIoUD4UB/EHRKTlCq2v19CMCkdW+ZOksJzUmt4TADCEgAgzVP0xXlX7UtrdgpDUs4Um3nPUcqCDfn5Ul4LbPuuFVvtUJRwWBYvXz2PB2wm5Uxcz2fc+OJS9uvunz6ho/7V0t2bm+rzSKYpukSSqNuCicAo2R3ZZCYyesQlsI7XCISwWHnU0Rfqv23LsX/H8JzVTrMdY/5oXd9f8pBmJPYy77tdf8OqHZHBXINt2dtDrd5EQwhjoQ+TItfwwJCV/jEsUff8hIzjxugJp5n+n3c2tZq3l2x7GUAyLM7ndoMGSvaqxPrVE5iCQ4QK9UpzllGn+QTfH1SZxY6Wi+cExecSfEejd1O1SmU/k1mmMCg10bMmN/fUP7ym6wJrU6XC3Xx6tAqj5h12o65f7ytvHTFtdVLlmkLnj5HRMrBE7hwnBVwUWn42e6rgUTVqTEzkHKTxdQKCvaohddcLchkA5AGjk/IwuLRZzzi80LYZhqO5FhEg0l7O/c9b3PJ88NXv7HmHaXlOkdKwqzzR06c8dthk8YkaU4npGQSguOdcRoBwJRRjHGF7ASxCmKYIZyaNABLxp3FzEx89WyrtUhBgZybXSIZwBvN5ZOF1QmQdRiO5lTPieiXfjb6pOYEMpNmOVKTB8HpcLA7TmkKGwECEJ7yyzX/HHDUJ6meBEg2+qQve+W1R2vXX6wvevKff69YfhgnJYvi1uq3AdQV5Odjl3/DKqHPyGcGM5W11ew68wZ3qGLu9QqNiI9ZUnTmqPXvLr+gcv4nZzUv+dk5w8Zm18erx7S6lMFsSoYQUHdV2PYiBiiHJlONMBjqWJusQz0svcO1q6ZU9BXFxJRDeb6dzNXsMNeO85P2nJRDcE4qM6ud7F1n+7bX/bOf1+t7l2+DcVH1tskrw81JcDoxMT7tv5sPv/Ck0cKzFKrAdgqde0tF6Sdft1VlZ7oT6Pp+E95/ZsSMajt5bw9t7oj4vuG+pIVBINJ1/Q8ia/7kNip21jTOperGEqWmuUQNhkucBs1f1F7zhIOIke+l8wsLlcrJF//zsQFHjz1aS/6raPN/MaTVXDpIOs2drQ14rGrF2P4JSa8saq+dDBSwJXFbPTpciuogu4NiklAdQD55M8rIu1vo2pU1f1nfvvo0Tx8JI4RL0oZhmDspQAWQkcroRMSws9kpn4iZtbydnzz8KmovKw+0Gpl+XvGvuJF3vpE27Zi/JY05IR6iHIpQwUwmTOshJSVARhmFwQhLGQYRnFYPpKC93rsEQhStIQJwR9YRbZKZAKJJrvTWhAbfXK26udhRUVNypZn25Zw+x37jDIW/cdQ2fQ4V6+yxmtf3HX+b0R4IsaYoDXG44I6GVa9UeZTrzRSPlqErO99t3PxvIpLI76RAbj6Rg4i9g6e1g9muEGnuusfLLFBQwGHmCYj3vL0x1DThzfLluNhMnfdq0qQ/XcSZ0zePPLtgckKmAmnADzMYAoDsbBEzeR0aDCiyEWQXXNSj/pbcQRIfBmASgJEAsqL2LgRgE4AyAF/ZzyAAISLyRz1Pwe6XSH5fDNce2x7ztX+fbI/PA2AqgH4ARgBIh1VCZQMsB3qTPYcmZg4cIv6c6DkZ9u89sKr8M4DDAZwKYCh2lxdD1M+1AL4G8BnsSDQiaorUb4oCFe6tvRvtTkh1kWIGBRQPCz8RVTJz3vEbP379q9aq8fdULu8PNuW0xCGN/xx45J/tDo9KFDBxgTX2rVtamubB7ZqVRR5+aNBRD6pEb3RWK+TtyA8FBbIIQPy8hzKIqALAvQDu3crsKm2uPnZW+ZxnA6bstxVB15kbi2eqk7C0wJuv5OaPYwAwJHzEzCQlpWjOfh4qkH5AAgUo+PbXyj/3ncAXt1dhdt16ZJjCzQDyd+lYFl1oN+7772/WHLaJQ+dSU5uZKBwNyqTLJv7ODOF31j7EtbAhQQJkSgR0aVenyQbq6lgBYEjTCeHgL1sr6VnakFGQMVoWRDc/LMxVGICfeb5b0f7s5yD1dXoal44/5yQi0gnAU/Yl7MMAAK8yKxcRmWsDLWdqnjgtw0e1/8yY1njtzsV9EAo0nNdn+OvXegY+dvKE4dtnFBer88QsozM7LgEYoMWrkeGoJCw+klvGBUVFJAB5/c7SnG/CDQpBlbPSR/7tocFHev+1exwDVSEIJsNJQg0DCNfVcQxQvn9GtEfBN2buA+AC+wxNBXBpBw3SsR+mnjB2h8ZWMPN/bR/BKiKa3xFcDiaw2FK7EXmxmFkDcIWtZVwI4Dj7bxHfZGf0D3t+YWa+D3Z01ve4h0p05WVmjgdwMYAkAH8A0Mf+2/6M8w+2cMC2RPsJgI8A7CSi9ztZxx7RRw0714dVRSF/WC9RG64btrJwwRAl7oOCqhUvrfA33OsP6yEJKDubG9zX7Vh4IzP/g4i2RGvPM7lYJSL91PWffuIU8SfubGxQjln3wezLNpYMfmbEzNdgReENBnAmgHIienkJszaVSDfYuHxg2dv/GVL2TtGqsWe/DmC+Xa592QDFE1wTrqNhnkF0U/rQ0G8BeLOzAdt/801b9SofGwS/bn5oVP789M2fLXxr2Ilvw8qrnABgMRHVExGuKX2cnpYOQIvDirZq3GkECcC3gKcwNxcE4Lq+Y91r1bC6oXGn4Xc73OdumHPWM8OOm5e39pMjJ69//6+N0AeRZEMapgI9GLbwpI5RZG3ckfGZy5eQb+bO+lr5Gsddy8ylABbbwkR/AHMIhHsHTvn00zUVi5a59SM/atsxYODq1+dx2PdHaO7VADLmtVVOrDfNo85PHvggAfUXEZm86OmBx65978Y2lyIuTOi74bK0ETddljaiDkBdH1Ka34IEAejYu6gjhaQZ1kiAiKBCWDylaBwh1zrHipTCUl5M0aoHB9y1eeGoMiXY9n79tlMcy1/8u2maBlya6hHCSQDCZXmxPJTvWaKFbZIaCOAcAL8AkAlg0Hd93GaonSXu7cu3ELQ1mA8BFBHRqmgN6UACiw1ekfj2BAATbaNrfwBj9vHRyDw5ao4HwkQbAtCXiJr3t+Jq9LoxswPAEQButOc2Yi8f6yzhMvo9FPvYvyUA3gLwPBHttL+/W20arBa2VnbFlDXvvbNUtJ8KfxgwpZEgtLK2sG8CXC4BlwtQBNDSDKQnYkSr8uHOiblnBKN6oBMRpJQEIO7BqlWfeH0bjmtrrIfqSUKWIba1mnowQ3Ol901PSxutJeKJ9MnTAJQCSJTAN4NrPj9sZ2MtJks3rwm2rDWYwwM1T99GM9S3JQ441zVg01tDZ84koKrDRBP+tH1R6WP+rSNCbe0cJxyUqjo26VJqgzP7Dk5qD13++ZjTXriDWRSUZAvEXVoLVUvJcifhCs+QaXcPnrKkY3/5KL+V6/c7Fs1/LFA+yWxplx6hGSmqY1uNHhypp3kAXwho95taeqpybDjuvLnjznh7ZnGxWpKdLe3zMOLybV+VvVCz2gHNjeGq21etB3b0UeLS3alJ6Vvqq84ITP7FhwzgZ2vmTH5fr/u0RRhp0A0MVDytrUZ4R4rqSFZA/eNHDMYH6ti3Bjjjz5+yZLa2BFM0J69+N+xSToAvaCZqrh0mc8AEm2CQJBkiQfjfwGOfuCJ95FOUn29yflQLai+EswDy9ooV/7utZtE1IIGbUsdfe9/gox7jSJRXXp45ZNUbR1Sr5vJgWzugEZwG1eiSwzJODITHAzS0AvEuoLX9Pe3oq8/Wi70qcgqMmA/lewCTKP/GvQCWAnjY1kgG2SYgvQPz6dDUfI+8i+j8C+pwP9vmF92WkKcAuB3ASmZ+npnH2rZ9eSB8LBHnesQ3wMx/BTDPvk6wwSQyX9nJXAX2nmMSmZv5PeyhiFq3qwDMAbDI1rJGRK15x/3rbN8il9LJ/skoE+hUAH8HUMrMf7W/n7vjvI8wFyIKbw+0XDnOjHtLU1Qkx3vUrP5ZRzw65gSRxEp9nzA/2C8o/3RH1pSy/yZPllM96V8ZALy5ZRy1FpFn+v/Ub8K5f08c+9CFKcMM09+O7W4a3JzkGr3RbEsLNra2efzhBwBst+9v8RvGtefJ5EeGhET90lAjxaWljBUZyRO3quG+bSpkJjvnPpY2/udEVMnY3e/INge2PjjoyAv/mDl2uVPVKOBSURGvjmhzisGLW6tksxlKVQAU5BFxdom8KH1UlSZ1/CFjjPz7oMk+a5HzO1sXIqLAwwOP/MP58f2XuRwO4YvTHNUuMVIVQp4eTvzfkZT4oivOJZ5Om9xSMvb07QBQkp0d8euRQrRpGLlzfz1gUrMbAlUaPI60lDHb2Jeu6zq/OCzbQwC8qwsdr409cek5zoxZN/Wb8FFuyjBzB/sSW1Ld48o1s/9mo82QFXWl6cL5IuyX1zF1qv/erMnvuKVAkideodSkIc7MtMPiMtPHBzMSxoWTEyaHBU2+17/lsU9bK291FBTIfOTvOiPefIYBICexb81DA47jh/ofy2ekDm5jW0NDntXfvv6Ii1ecpaT+1qFpeormgTsluY+W4Bp4QdyA6tOMhAJibEv2JKJg4LSQDuDqhLNiisn3pZnYTts3onIhDDsforu5FPtD0v4eI+p7fMz8P1tLQsf6P70xV/vnE5n5m4M8365QcH8qu0avETOPZ+YXD9KcpP1cI+p3r0eEgG5HhDFIAIiDwLPNm4/cHGj5R6MefJqZL/VWLc+MoBwzxzPzUbyPqsORMTitn/unL372EmXB0w/RwicfvmX7wvOYuY+nk7PhAVDYWpnxeUvl6T5Tv+fcDXP+M2rVW/+3ituPiEjM31Ft1/V6e8UpyqKnHxu6vPDZ8nDbdQ/UrRszYsOHkRpkUKyaJZnP15cd9UHLzlG7nPbf/Z56XmjYkqcseebRFxs3X/d6c/WweAAJpOLx0M6JzNx3Lw8g1faBlrRWnLc11Hb/tmDrIyvaa35RGQyOZWYBW0uMVPi1ha9js5a+cLuyYPaLs9Z+dEsZt43jreza5SwHsDEQGDFrwydblaVP86NVa+ZXhX2P7wj53lsfaH47pfTFt1JLX5xHS57VsfQZw7H42dq9CYrM7Gbmscw8xm4D/S25QwC4dcOS4WX+5lvKA63/mttedQYzp3oA/HnT/Mz3wvVHMvPgHp3BGPVIWhfMnMDMb9lMIWQzi++D9KifdzDzKVF+jd4wcYGZE5n5Xx2+81ABkS4DShSYHM3MzVFAYhzEsUr73DAzv2kze9F9UNlXqfjdFXT3W4jYV5dCL0QHQUN0Wsk22q+xj3YC3I2y+vtLe8389u7TLBl13/53a+xY/JE6G0thrkIAri9fcB3KXmQsf54v3fTF9I7PumH7knOx/AWJpc+aysKn1/SIy+9tDp1XYI7RQQYUzf73jzYzCBwCjFRGAUuImXN6CipRYDKQmdd0kN4PVfpOQIkCk+OYubUTUD7YFDk/1/eGIOBlryjmYrXYzofBnoyfusK8mdkq715crKK4WM39rlLnzORlFsXM6sziYhVcqHj3s7Uv25+NfFchs9IZI7Tu8wpvFxg9M1OuPY/CDlqNXfqf9mdskXUt5EJlb9+/a42LvSqKi9WZxV7V6/WKXftgA8odO5f8FuteZSx5OnT0mvfmj1r5urfOCP2MmX/zYWvFP90Ln2rEkqd4XPknXNJafbW6F1COEnDFdwkchcxKMbPqjRZc7LlxrNrw9+c3YeZUAGthhcHSIbT2kcKKEsAZRPRJxE/QVTCxi9f1sf0ko2wfgHaIb9E+nfJRGeHTAHxpW3ZMfL85MJFghQYAI4mopbdauMbokOYhaedvLnnzXa6bYbIJCEJqWEW624NWl4rq9kak+9H62oCjb56VMuiJfOTLO8WdkvngHYsYoBy8w5AJoOYQHWYEPHQAJ8LKiYjkVezPHCNMdwCAubByZgz8MMLS9wooUTbokQC+gRUOzDi0glmG2+G84idVLfmny09SJ5a9e+GM+PRJ491px0nm/k1GuGJLqPXLUuFbOySkzXtr9Akrvq/xxfJQDq5UeahK7MIGACeAu4goZ38jv2y1WbEB83MbTMwfydmKRO/8H6zEy0MJJCPAlw1gS0w4/MkIp40EPL4JQLv1jqoAjEQSZgCMZQDAhQrRRSZ/DyXqYmHD3w8TOBRJtRlmNjPfaJuv9od5KnaC5jWwzFxhHGIlUbr58ka0rqn23OQhBpKRLPu42Gv106BIqDgXe1UfWxYEIgoRkdkGJoMLldzCQgWU972ACWJSzUGTKrpr8uL9AKLe9MdETCblAGYCqLQPstzL3FQiMpj5IgCv4ofhM+lInZq8IpUMmPlhANfaWldvzI33sp/d2UcTwDQiWhbzofy0+cuhZOqI0UGQdmGVoZjfgXHvjUlEEv4iTEbs46Ko+3vjPEhYZqvhNpDsLfJpV19yANdjzxpVvSmF651c5oHeLxtMhgH4mT2vnmonkURM2sc+Snw72XNfa6PAThaM0U9XaznUzBwxOvBqqkpEflvanWb/yREFINHg3rGKblUUuHTMmmdYhSK1DlpGTwSFCKhcy8zz9sHYhK2dnAvgSPSe34Sj5kD70Aoikv6BFIocAFJ6YU2j37WO+xn51wGgL75dESBaAFGizowCKwCiLeaQj9Ehw+9iS3BQtRSGFTo8Grt9DR39DXNgRRQpAJYB+ICIAvt4bg6sUiZOAP9nM66ehLVGmOcOIhq0N5U6ysewDlYUVG9ovB3HvQPAK1HaV4T5ZsNq39sb9C2TV9TcToFVoLG7wMVRGuQzAFYAeDa6CnTUenpg1Wcfae/BqbBKrnTUciKajAEgm4gWRRWpjFGMYvRTART7Oi4q05qZeYmd9TyVmUf0pAQKMw+2y6lwDzK4I0mI25g5rrPkpahEzSvspMhwLyTrRcbbzMxPMfNI2+/U2Tyd9lrN62EL4E4TG6MSNP/bw7WMVEKY1Y29jLfnmMPMH9vnJJoKowSVGMUoRj9RLQXMPI2Z72fm8/dyX6TRlrIfGblKpOtf1O9e6SEjNGxmeI39PLWT71SY+ZleyBqPzth/mpkndPiuzjodRhj/mb3w/fsClDk9WMfIZ96xBQmnXZl4b/tI0XPdi0CSy8yL7XG5otciRjGK0U8YVDowEiVKg6EePDvSTnY0MzfazLo79cIiGkdBtEbSgemm91IZkQjjvaMDiNA+SqFE1ut3PQTO7wKUT3vw/Mjar7PNWXvs0X7sJUWdCTVqbNRxL2IUo0OFYuryQSbbNr+LUdi/MyMl0ffir4j0V4++RCfPjrSTXQ9gM77tyO8qdRY5FmFiw3thOSI+k+VEdGdE87HnsM9+H7YTOhhZogO0XSs6zLlLW22PazSAV5l5AjM7I3vUiWaidJgfR50JIyq4IxLWHAsTjtEhR7Eor+8JVOwfOzb4oU6AXu7N4WqDCmHPSKFjAeTACv3taSgv7UUIkQBusv/f3ezxyNgaAVwR1bSqK87lAyUQRRj1BwD+3EOBjWF1LDwTQAkzr4CV5/MYAKND22ARtb7fAtRoIIqBSYxigBKjTk0bAFQ727xjmGjknqNghQdHS75HA8iD1VaCo4AlBQcnU72n7XcjkVObiGiFHVnV1UilAx0qW9MLWh5FjTPbvgDgr7Ba/X4Eq926n4g+6SBkqDawxCK4YhQDlBjtE0ii2+/q9u8GwqpGfD2ADJu5uGGFyHZlrwzs2QXwQErxPfk8A/hHlKZ1qAG9CaAVQEIPtb2IJmXae6rAavkMAJfbF5j5SwBtAP4NYAUR1UZrojFgiVEMUGLUGbPalTdgh8ZeASvh8cJ9fKxjcuO+eqyrB2jckWTGkdidoNkTsxMBqDpQbYi7PShrPBoRbWDm5wD8zgbpnpZeic47itZGIyBzvP270wE0MPOjAL4kos8i58bWWGJJjDGKAUoMSHb1lDeZeTSAmwGcAqBfh1uje8pHSnUcCjWyIvb98bYG1RP/iQKgGVZPj97QeHqbIkz7PQC/t8fbm+VlqBOQia6akAbgdgCSmb8BcCsRzbXPkRrtT4lRjA4VikV5HWQwsX/+NYCFtmbSD7vrPEVLsqp9HWjTVbemg70XOewKs/4awCHZy8MGfWFrB09hd4n/A0lK1H5H6pgJWCbPEmZ+m5kn2lqiGgsbjlEMUH7CYMLMGcz8DoDHYTVrimgiKn54Jd97wswiQFRjS9qH6tzJNjPdD6DO1hLNg7i+GnbXNjMAnANgHjOfGQkljr1dMYoByk8MTCJmCgAvAjg7CkgORe3jYNIhDaK2n4vtvJ4TYTnoFfROZeeuAIuwhQ4dVoDAe8x8Z1Qia0xTiVEMUH5ia+wFcLLNFH7qQPLDUcMsB71KRCsBHAeg1tYcDBz4sOWOFNFYTFj+letsDS/2HscoBig/Ae0k4rCeBeA2WBWGfxStcXvpOT8Ix3LEZ0FEq2yh4EN7H8X3ACwU9b33MvPxtr9Hib1xMYoByo+bTNtsEqlTpfaiZhKRVPd2HUjqKShG1mCgzQiNQ91sY4OKQkQriOgMAFcC2BoFLDJq7Q+0byOSxOoE8CIzp1ryS6zycIxigPJj1U6E7YjPwe4GVD1d7+iOfoTdUUGdXQeSmno4n0hJkiMBjLGdy4f8WYxEftnayjMADoNVmmWxPf7otdejwKUnEXF7I8XWUgbB6ip5IDpmxihGB1XSjNG+1zYMq4aTC7sbanVXG4luHQsAfgCrYTWI6ii9rgJwLqyQ5N5kNKatSXwNYDmAKeheM69IFnqSff1gyA5vlra2EgLwL2b+H4AhsMyaQ2GVxeksb0iPAoPeANDIM/5IRA/j4EWgxShGMUA5iNoJAdCZORFWRjn3YK2jAWEududErCai0n2MYXpvA0pUxdsgM1fYgNITyZthmb1+cJJ1VKUD1e7AuAbApfbvzgCQCmAmrHprElZ0VjTIRPrLE3pW0kUC6M/MZxPRu7HujTGKAcqPj8iODsqCVU6juz3JIzkIAQDnA5gTnXsQVZ22I5PpDfPad1F8T9fIvu4goteYmX+gG21EVYomWGHGH9h/foGZ/2jv4RRYiaxsCxlH7EVo6LLWaGvA2QDejdr/GMUoBig/NmWlhxJ8pMbTxUT0mW2/31ULypZEO1YmjvRDP5Bzgs28stEzP4oBYDgzn0dEbzGzg4jCh6jWGVlXArBHZWQb5KOBPvJemUTks3/+yr5gN/QaA+ASWIUhk3tBk/THXrcYfd8Uc8ofBCG2F/ZnfVR1YsO+vi8pNAJgL2PfBSr3d35OAH9l5ngiCu9v+Guk7P9BBhMRVYtN3VuHzag94kjnSftezS462UxEC4joj7ByW2p6QfjQYq9ajGKAEqP91SQPGZOQzUQlgE09ZIQR88w0AB8yc6LNrL+rTa5mawUNB2Guqg0mpwCoZOZXmfkYGzCkDRra3oAw0nnSvlcnIj0aYIioDFbDLYGe5bNoHTTIGMUoBigx2pOf2f+m2wxU2VuuQaQ3/b7u6RV1yxqHSkQNAJ6xNbCeJChGSpkcD+BTZh4QaZMb0QCiL3sMQRtwjsYBDJeNKtd/EoA3AfQBcBGselofMvMsZk6yx2tGjVfZ1xWl2UVMaO4eAEF01eIYxSgGKD9yQOhpFBQAPGH7F/RIKZCI+STKjMJ2b3rdDm09kJJqJHz4c1i2e6UXzDUmgKMAlDPzA8x8QUQDiL6Y2cHMvwEwB1YjMnkgmKkNyszMw2CVsHdjd+KiCuA0e/5L+P/bu5oQOYoo/L3eWbMbUfxLNAgRNImg+Ic3T0IOguBFPJlD8KKCCx4EEQ8eRI14MIEgCIp7EvGgXkxkDRr8I+aiUVfDojEQkmCIhsW/JDvd/XmoVzuVsmfnp3tmOrPvg2Z6ZuiaelXT7+v3qt575LMktwb9zbo4vNvybQC3lZDDj/u5iGAMhpG4UgyDHd8yJWS9gtkCYJ7kDIDjIvJTgQK8Eq5OCeG2r25B/7vLOlkpfj3hIMmP4WJe8pLKbCJQqk+pTAsFbTYA3KjnAyET/7Cl1skTcOs8zcit5Md2E4AX4aL9jyjBvgLgeJu595+tg8ugcCdaiULLoGm3m8EIZbxdVSfhAgDvKKncEwCbAcwBOEvyfbTiGPxv3Q3g1iHKKPoU/xxcWnVPKFVsQvAp7W9uZyGhFehZ/eS1XF3XKznn0b0iuLDyoq/m6Pv7Tg8/VxXpT9ttZzBCGUP4hVoRWSS5T59Cy2aF9W6sabhUG+0UbWzdVEGMRTJmuo5xGMCralWkFf2nGoEVsJLlVgVW2i13NYDrOlhfYd0Sdhq3gmuTkvPTgItT+rALeQyGgcLWUAYHf2PPoZWyniXnaiJ4Io4P7/6pMpdXp62omaZP3wHghCq3qjLvhqlm4qNKS3LtCmSR9kEOCVbOsRYeSQX9B5wbdL8SvdWbNxihjKGVkmulxk/gcmslqGah3MdfxEdVc+kTNWZwLru2T9xqiSW64+teAL/pdReDUkt1LN8D8K+mLGEvVloN4C2nnVHQq8FghDKO46u7oWYA/I3hpDavilDOAHhLSTHtQJwNEfkFwMsYbpncMjLmcAvouzTJY5GV0qjxPeJ3mx0F8O5FQH4GIxRDSSslg9stdADAB6ps674bxy947xCRZpf/kYzkJIDdAN7A6Coa9mKdXALgaxH5Uq2TkDSpDwJHARxAq/ZM3UgRAGZE5Aw0f5zddQYjlPFGrovXjwP4VBVZXUnlvJLBPIA31YXSUUlp7EUTLr/YowB24sLCU3VSwksq4yEA23Ru8lgeABMi8hecS2yiZnKc1/GdFZG9lmHYYFhF8BHeGpD4ER0yPeqAlGSu59+R3KD9TXqV0/vxST5E8mTQ/ihlzUk2g/dfkLwsnJs28iQkLyX5jV7XHPE85cE47iU5rf8pC2Y0GFYZqfi0HFMk90TKPBuhcgqV5NOBok1KyNrQ1xtIzgftN4csa6bj63GW5GNB/5JOc6avV5E8qG0sBeQ7zLlKg/PXSa7pRIgGg2EVWCp6/gDJXyPl1xySkl2KPtuvRaFQlkyCNrylMklyO8mfO/ShSjQjIvmT5G6SGwNLSrqUw5PKFSQPDZkc02ic/iC5tVcZDAbDGJNK4ALbQPJ5kgttlEmzhOIKr08Lvl9UBXlfoDQrdZ9EBLqe5CMkf6xQ1ryDjAskXyK5ObSeepUxIMfLST4ckWM3/eiW6H0bsQV0jOQLJG/y/TEyMdQR9qccHbFcsJBKcjuA2+EW79cWXJL2OK9FMQmEKyO8B8CciPzQrj8DlnUbXA6sZ+DyZEmfshZF5Z8D8BpcSd5ZH1uiu9DSNrEmXZFj0NYanacH4bIkx/3vZ3t4o2Cu9ukxq7E+y7VZ7A4yGKEYCt0pcLujvLJaD5deZQauql8O4BZVwL3ge7TqbJwGsEtff9cdWf73BUDer6LtQ9blaG6S16oifTKQ9R64xIndYBHA5yrDKbiI/X9E5FRgIUn4mxVYXElQT34SwDUA7odLkJkB2Ajgrj6aPwa38yyBy0D8GYDTfjtzUGDNyMRghGLoqKwaaJX1jb9bB5favVssAfgqKD8btzcJlzYlH6GsKAqYJLlJyWWlOif+uyMicrjIInLNSzpAGSY9MUefT8FVYZzqsclvReREm7lKB034BoMRyngSy/8KJvWrGKOqh8s1UuqinKqQNZIxG6Z8Qf+TwBJKS7TXCAgzr9NcGQxGKONDMv0kRcwuRmXUo6x53VxA3i3Wx72VmzvLYDAYDAaDAcB/tyMilxJvnVcAAAAASUVORK5CYII=" alt="Keepads"></div>
+      <div class="units">
+        <button class="on">Toca do Pintado</button>
+      </div>
+    </div>
+    <div class="eyebrow" style="margin-top:18px;position:relative;z-index:2">Toca do Pintado · Análise e direcionamento</div>
+    <h1 id="heroTitle">A Toca já venceu a parte difícil. <em>Falta ser lembrada na hora da decisão.</em></h1>
+    <p class="sub" id="heroSub">O que encontramos antes de falar de qualquer campanha: auditoria da ficha do Google, do Instagram, do cardápio digital, da Biblioteca de Anúncios da Meta e de seis concorrentes da região.</p>
+    <div class="hero-meta">
+      <div class="per-lab">Pesquisa realizada em <b>17 de setembro de 2026</b></div>
+      <div class="per-lab">Fontes <b>públicas e verificáveis</b></div>
+      <div class="per-lab">Volta Redonda <b>e entorno</b></div>
+    </div>
+  </div>
+</header>
+
+<div class="topbar"><div class="wrap">
+  <nav class="tabs" id="tabs">
+    <button data-t="panorama" class="on">Panorama</button>
+    <button data-t="diagnostico">Diagnóstico</button>
+    <button data-t="concorrencia">Concorrência</button>
+    <button data-t="mercado">Mercado e calendário</button>
+    <button data-t="estrategia">Direcionamento</button>
+    <button data-t="referencias">Referências criativas</button>
+  </nav>
+  <div class="stepper"><b id="stepN">1</b> de 6</div>
+</div></div>
+
+<main><div class="wrap">
+
+<!-- ============ PANORAMA ============ -->
+<section class="panel on" id="p-panorama">
+
+  <div class="note info" style="margin-bottom:16px">Antes de propor qualquer coisa, a gente pesquisou. Tudo que está nesta apresentação foi verificado em fontes públicas no dia <b>17 de setembro de 2026</b>. Onde o dado depende dos números internos da Toca, a gente sinaliza em vez de estimar.</div>
+
+  <div class="sec-h" style="margin-top:6px"><h2>O ponto de partida</h2><p>Existe uma coisa que dinheiro não compra e tempo não acelera: reputação acumulada.</p></div>
+
+  <div class="grid g4">
+    <div class="card kpi dark">
+      <div class="lab">Nota no Google</div>
+      <div class="val">4,5<small> / 5</small></div>
+      <div class="hint">Acima de três dos cinco concorrentes diretos mapeados na cidade</div>
+    </div>
+    <div class="card kpi">
+      <div class="lab">Avaliações acumuladas</div>
+      <div class="val">2.707</div>
+      <div class="hint">Volume que leva anos para ser construído e não se compra</div>
+    </div>
+    <div class="card kpi">
+      <div class="lab">Seguidores no Instagram</div>
+      <div class="val">45,3<small> mil</small></div>
+      <div class="hint">Audiência própria já conquistada, sem custo de mídia</div>
+    </div>
+    <div class="card kpi">
+      <div class="lab">Casa aberta desde</div>
+      <div class="val">1994</div>
+      <div class="hint">32 anos de operação na mesma cidade</div>
+    </div>
+  </div>
+
+  <div class="sec grid g2">
+    <div class="card chart">
+      <h3>Como as 2.707 avaliações se distribuem</h3>
+      <p class="cap">Distribuição pública visível na ficha do Google em 17 de setembro de 2026.</p>
+      <div class="ret">
+        <div class="ret-row"><div>5 estrelas</div><div class="ret-bar"><span style="width:100%"></span></div><div class="ret-val"><b>1.932</b> · 71,4%</div></div>
+        <div class="ret-row"><div>4 estrelas</div><div class="ret-bar"><span style="width:24.6%"></span></div><div class="ret-val"><b>476</b> · 17,6%</div></div>
+        <div class="ret-row"><div>3 estrelas</div><div class="ret-bar"><span style="width:7.8%"></span></div><div class="ret-val"><b>151</b> · 5,6%</div></div>
+        <div class="ret-row"><div>2 estrelas</div><div class="ret-bar"><span style="width:3.4%"></span></div><div class="ret-val"><b>65</b> · 2,4%</div></div>
+        <div class="ret-row"><div>1 estrela</div><div class="ret-bar"><span style="width:4.3%"></span></div><div class="ret-val"><b>83</b> · 3,1%</div></div>
+      </div>
+      <div class="note ok" style="margin-top:16px"><b>89% das avaliações são 4 ou 5 estrelas.</b> Com esse volume, isso deixa de ser sorte de amostra e passa a ser evidência de consistência ao longo de muitos anos de operação.</div>
+    </div>
+
+    <div class="card" style="padding:22px">
+      <div class="eyebrow">Ativos já construídos</div>
+      <h3 style="font-size:17px;margin:6px 0 12px">O que a Toca já tem funcionando</h3>
+      <div class="ret" style="gap:11px">
+        <div class="occ" style="padding:0;gap:4px"><h4 style="font-size:13.5px">Categoria correta no Google</h4><div class="q">A ficha está classificada como restaurante de frutos do mar, o que alinha a casa às buscas da especialidade.</div></div>
+        <div class="occ" style="padding:0;gap:4px;border-top:1px solid var(--linha);padding-top:11px"><h4 style="font-size:13.5px">Informação básica publicada</h4><div class="q">Endereço, telefone, horários, cardápio e um volume grande de fotos.</div></div>
+        <div class="occ" style="padding:0;gap:4px;border-top:1px solid var(--linha);padding-top:11px"><h4 style="font-size:13.5px">Resposta às avaliações</h4><div class="q">Existem respostas da casa tanto em avaliações positivas quanto negativas, inclusive recentes. Poucos restaurantes fazem isso.</div></div>
+        <div class="occ" style="padding:0;gap:4px;border-top:1px solid var(--linha);padding-top:11px"><h4 style="font-size:13.5px">Pratos com identidade própria</h4><div class="q">O próprio Google já destaca <b>Casquinha de Siri</b> e <b>Camarão Praiano</b> entre os mais pedidos. São candidatos naturais a prato de memória.</div></div>
+        <div class="occ" style="padding:0;gap:4px;border-top:1px solid var(--linha);padding-top:11px"><h4 style="font-size:13.5px">Autoridade declarada</h4><div class="q">O "desde 1994" já está na bio do Instagram. É um argumento que nenhum concorrente novo consegue copiar.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="quote">
+      <p>A Toca não tem um problema de reputação.<br>Tem <em>um ativo de reputação</em> que ainda não está sendo usado como arma.</p>
+      <div class="who">O restante desta apresentação é sobre como transformar esse ativo em mesa ocupada.</div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ============ DIAGNÓSTICO ============ -->
+<section class="panel" id="p-diagnostico">
+
+  <div class="sec-h" style="margin-top:6px"><h2>Reputação forte, jornada com atrito</h2><p>Uma pessoa decide em três etapas: descobre, compara e age. A Toca é excelente nas duas primeiras.</p></div>
+
+  <p class="lead" style="margin-bottom:16px">É na terceira etapa, a hora de agir, que aparecem os ruídos. Nenhum deles é grave sozinho. Juntos, eles custam decisões que já estavam quase tomadas.</p>
+
+  <div class="card diag">
+    <h3><span class="n">1</span> Os horários não batem entre os canais</h3>
+    <p>O Google informa <span class="ev">11h às 23h30</span>. O Instagram informa <span class="ev">11h às 23h</span>. Meia hora de diferença parece detalhe, mas é exatamente a diferença entre uma família sair de casa às 22h20 confiante ou desistir na dúvida. Quando os canais discordam, o cliente acredita no mais restritivo.</p>
+
+    <h3 class="w"><span class="n">2</span> O Google entrega reserva e não leva crédito por isso</h3>
+    <p>O botão <strong>"Encontrar mesa"</strong> da ficha do Google leva ao WhatsApp com uma mensagem já escrita dizendo <span class="ev">"vim do Instagram"</span>. A pessoa veio do Google.</p>
+    <p>Isso não é um detalhe de texto. É o que torna impossível saber hoje qual canal está trazendo reserva de verdade. Na prática, tudo que o Google entrega aparece como se fosse do Instagram, e qualquer decisão de investimento tomada com base nisso começa errada.</p>
+
+    <h3><span class="n">3</span> O cardápio digital gera dúvida na hora da compra</h3>
+    <p>Na loja de pedidos existem <strong>dois itens com o mesmo nome</strong>, "Combo de Camarão". A descrição do "Pastel de Camarão Unid" fala em camarões empanados. São ruídos pequenos, mas acontecem no momento mais sensível de todos: a pessoa já decidiu comprar e está escolhendo o quê.</p>
+
+    <h3><span class="n">4</span> A página de links vende preço, e não a casa</h3>
+    <p>O destino atual destaca a loja própria com o argumento de <strong>menor preço</strong>. Uma casa com 32 anos, prato assinatura e 2.707 avaliações competindo por ser a mais barata joga fora justamente a vantagem que levou três décadas para construir.</p>
+    <p>Além disso, não existe botão de <strong>como chegar</strong>. Quem já decidiu ir não tem caminho direto.</p>
+
+    <h3><span class="n">5</span> Três intenções diferentes entram pela mesma porta</h3>
+    <p>Hoje, quem quer <strong>reservar mesa</strong>, quem quer <strong>pedir em casa</strong> e quem quer <strong>saber como chegar</strong> caem todos na mesma conversa de WhatsApp. São três pessoas diferentes, em três momentos diferentes, com três valores diferentes para o negócio.</p>
+    <p>Enquanto estiverem juntas, nenhuma delas pode ser medida separadamente, e o atendimento precisa adivinhar a cada mensagem o que a pessoa quer.</p>
+  </div>
+
+  <div class="note warn" style="margin-top:16px">Nada disso é crítica à operação. É o mapa dos pontos em que a Toca perde gente sem ter como saber que está perdendo, porque a perda acontece antes de qualquer contato.</div>
+
+  <!-- INSTAGRAM -->
+  <div class="sec">
+    <div class="sec-h"><h2>O Instagram</h2><p>45 mil seguidores e uma pergunta que o perfil ainda não responde.</p></div>
+
+    <div class="grid g2">
+      <div class="card" style="padding:22px">
+        <div class="eyebrow">O que já funciona</div>
+        <h3 style="font-size:16px;margin:6px 0 12px">Existe repertório e existe ritmo</h3>
+        <div class="frente" style="padding:0">
+          <ul>
+            <li>Especialidade explícita na bio: peixes e frutos do mar</li>
+            <li>O "desde 1994" aparece logo na entrada do perfil</li>
+            <li>Destaques bem organizados: pratos, restaurante, avaliações, localização, horários e festival</li>
+            <li>Frequência de publicação consistente</li>
+            <li>Repertório de humor e trends que gera interação real</li>
+            <li>Prova social já sendo usada, como no vídeo "não precisa confiar na gente, confie neles"</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card chart">
+        <h3>O que a amostra recente mostrou</h3>
+        <p class="cap">Composição de 11 publicações recentes analisadas uma a uma.</p>
+        <div class="ret">
+          <div class="ret-row"><div>Humor e trend</div><div class="ret-bar"><span style="width:100%"></span></div><div class="ret-val">presença <b>alta</b></div></div>
+          <div class="ret-row"><div>Prato em close</div><div class="ret-bar"><span style="width:88%"></span></div><div class="ret-val">presença <b>alta</b></div></div>
+          <div class="ret-row"><div>Promoção</div><div class="ret-bar"><span style="width:52%"></span></div><div class="ret-val">presença <b>média</b></div></div>
+          <div class="ret-row"><div>Prova social</div><div class="ret-bar"><span style="width:24%"></span></div><div class="ret-val">presença <b>baixa</b></div></div>
+          <div class="ret-row"><div>A visita em si</div><div class="ret-bar"><span style="width:7%"></span></div><div class="ret-val">quase <b>ausente</b></div></div>
+        </div>
+        <div class="leg"><span><i style="background:var(--verde)"></i>Chegada, salão, mesa, serviço e prato sendo servido é o que quase não aparece</span></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="card diag">
+        <h3 class="w"><span class="n">!</span> A lacuna</h3>
+        <p>O perfil responde muito bem à pergunta <strong>"que comida é essa?"</strong>.</p>
+        <p>Ele quase não responde à pergunta que vem antes da decisão de sair de casa: <strong>"como vai ser a noite de quem eu levar na Toca?"</strong></p>
+        <p>Um close de camarão desperta fome. Mas fome se resolve na cozinha de casa, no aplicativo de entrega ou no lugar mais perto. O que faz uma família pegar o carro num domingo é conseguir <strong>imaginar a cena</strong>: a chegada, a mesa posta, o prato chegando, a conversa, o atendimento.</p>
+        <p>Num dos vídeos de petisco analisados, com legenda curta, os comentários mostravam pessoas perguntando <strong>onde fica o lugar</strong>. A comida chamou atenção. O restaurante não foi identificado.</p>
+      </div>
+    </div>
+
+    <div class="note ok" style="margin-top:16px">Não falta conteúdo na Toca. Falta uma <b>segunda camada</b> de conteúdo: a que mostra a experiência, e não apenas o prato.</div>
+  </div>
+
+</section>
+
+<!-- ============ CONCORRÊNCIA ============ -->
+<section class="panel" id="p-concorrencia">
+
+  <div class="sec-h" style="margin-top:6px"><h2>Quem disputa a mesma mesa</h2><p>A Toca não concorre só com quem vende peixe.</p></div>
+
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="card occ"><h4>Culinária</h4><div class="q">Quem também vende peixe, camarão e moqueca na cidade.</div></div>
+    <div class="card occ"><h4>Ocasião</h4><div class="q">Quem também recebe o domingo em família, o jantar a dois e o aniversário, mesmo servindo outra comida.</div></div>
+    <div class="card occ"><h4>Conveniência</h4><div class="q">O sofá de casa e o aplicativo de entrega. Às vezes o concorrente é simplesmente não sair.</div></div>
+  </div>
+
+  <div class="note info" style="margin-bottom:16px">Uma família pode querer frutos do mar e terminar numa churrascaria porque lá cabia todo mundo. Por isso a análise não pode parar no concorrente óbvio.</div>
+
+  <div class="card tbl-wrap">
+    <table>
+      <thead><tr><th class="txt">Casa</th><th>Nota</th><th>Avaliações</th><th>Faixa por pessoa</th><th class="txt">Tipo de disputa</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Coco Bambu Volta Redonda</td><td class="best">4,8</td><td>3.074</td><td class="na">não informada</td><td class="txt"><span class="badge b-erro">Direto</span> prioridade máxima</td></tr>
+        <tr><td class="name">Paulo do Peixe</td><td>4,5</td><td>3.946</td><td>R$ 80 a 200</td><td class="txt"><span class="badge b-erro">Direto</span> prioridade alta</td></tr>
+        <tr class="me"><td class="name">Toca do Pintado</td><td>4,5</td><td>2.707</td><td>R$ 60 a 180</td><td class="txt"><span class="badge b-conversa">Referência</span></td></tr>
+        <tr><td class="name">Restaurante Jambalaia</td><td>4,4</td><td>1.368</td><td>R$ 80 a 100</td><td class="txt"><span class="badge b-alcance">Direto</span> peixe e família</td></tr>
+        <tr><td class="name">Bar do Juca Eucaliptal</td><td>4,4</td><td>749</td><td>R$ 60 a 120</td><td class="txt"><span class="badge b-alcance">Direto</span> peixe</td></tr>
+        <tr><td class="name">Adega do Portuga</td><td>4,4</td><td>609</td><td>R$ 80 a 140</td><td class="txt"><span class="badge b-alcance">Direto</span> jantar e ocasião</td></tr>
+        <tr><td class="name">Sabor e Lenha, em Barra Mansa</td><td class="na">n/a</td><td class="na">n/a</td><td class="na">n/a</td><td class="txt"><span class="badge b-neutro">Indireto</span> disputa a ocasião</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note warn" style="margin-top:13px">As faixas de preço são <b>colaborativas</b>, informadas por usuários do Google, e não equivalem ao ticket médio real de nenhuma das casas. Nota é fotografia agregada, não ranking de qualidade.</div>
+
+  <div class="sec">
+    <div class="card diag">
+      <h3><span class="n">=</span> Como ler esse quadro</h3>
+      <p>A Toca está <strong>tecnicamente empatada em nota com o Paulo do Peixe</strong> e acima de três concorrentes diretos. O Coco Bambu lidera em nota e volume, mas é uma rede nacional dentro de um shopping, com estrutura que uma casa independente não replica e nem deveria tentar replicar.</p>
+      <p>O ponto importante é outro: <strong>nota alta deixa de ser diferencial quando todo mundo tem nota alta.</strong> Numa cidade em que as seis principais casas estão entre 4,4 e 4,8, a estrela não decide mais nada. A briga real não está na avaliação. Está em <strong>quem é lembrado primeiro</strong>, antes de a pessoa começar a comparar.</p>
+    </div>
+  </div>
+
+  <!-- AD LIBRARY -->
+  <div class="sec">
+    <div class="sec-h"><h2>O que a concorrência está comprando</h2><p>A Biblioteca de Anúncios da Meta é pública. Qualquer pessoa pode ver o que qualquer empresa anuncia. Fomos ver.</p></div>
+
+    <div class="card chart">
+      <h3>Anúncios ativos encontrados em 17 de setembro de 2026</h3>
+      <p class="cap">Varredura por página de anunciante, Brasil, anúncios ativos naquele dia.</p>
+      <div class="ret">
+        <div class="ret-row"><div>Coco Bambu</div><div class="ret-bar"><span style="width:100%"></span></div><div class="ret-val"><b>5</b> ativos</div></div>
+        <div class="ret-row"><div>Jambalaia</div><div class="ret-bar"><span style="width:20%"></span></div><div class="ret-val"><b>1</b> ativo</div></div>
+        <div class="ret-row"><div>Paulo do Peixe</div><div class="ret-bar"><span style="width:0"></span></div><div class="ret-val"><b>0</b></div></div>
+        <div class="ret-row"><div>Adega do Portuga</div><div class="ret-bar"><span style="width:0"></span></div><div class="ret-val"><b>0</b></div></div>
+        <div class="ret-row"><div>Bar do Juca</div><div class="ret-bar"><span style="width:0"></span></div><div class="ret-val"><b>0</b></div></div>
+        <div class="ret-row"><div>Toca do Pintado</div><div class="ret-bar"><span style="width:0"></span></div><div class="ret-val"><b>0</b></div></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><h2>As cinco peças do Coco Bambu, uma a uma</h2><p>Repare que nenhuma delas diz "venha conhecer".</p></div>
+      <div class="grid g4">
+        <div class="card occ">
+          <span class="badge b-conversa" style="align-self:flex-start">Pedir agora</span>
+          <h4>Vídeo de 9 segundos</h4>
+          <div class="q">Prato de camarão e a pergunta "bateu a vontade de Coco Bambu Volta Redonda?". O clique vai direto para o aplicativo de pedidos da rede.</div>
+          <div class="p"><b>Função:</b> encurtar ao máximo o caminho entre a fome e a compra.</div>
+          <a class="lnk" href="https://www.facebook.com/ads/library/?id=2281154679400897" target="_blank" rel="noopener">Ver a peça <span class="id">2281154679400897</span></a>
+        </div>
+        <div class="card occ">
+          <span class="badge b-perfil" style="align-self:flex-start">Visita ao salão</span>
+          <h4>Vídeo de 52 segundos</h4>
+          <div class="q">Camarão à vontade por R$ 79,90 por pessoa, almoço das 12h às 15h e jantar das 19h às 22h, com preço infantil e sobremesa informados.</div>
+          <div class="p"><b>Função:</b> dar uma razão datada, específica e sem dúvida para sair de casa.</div>
+          <a class="lnk" href="https://www.facebook.com/ads/library/?id=1598966408285271" target="_blank" rel="noopener">Ver a peça <span class="id">1598966408285271</span></a>
+        </div>
+        <div class="card occ" style="border-color:var(--verde);border-width:2px">
+          <span class="badge b-video" style="align-self:flex-start">Ocasião de grupo</span>
+          <h4>Três variações: 38s, 17s e 15s</h4>
+          <div class="q">Aniversários, casamentos e confraternizações de empresa. As três levam à mesma página de eventos da unidade para pedir orçamento.</div>
+          <div class="p"><b>Função:</b> capturar a mesa grande, que é a de maior valor do ano.</div>
+          <div class="pecas">
+            <a class="lnk sm" href="https://www.facebook.com/ads/library/?id=1771844550624633" target="_blank" rel="noopener">Versão 38s <span class="id">1771844550624633</span></a>
+            <a class="lnk sm" href="https://www.facebook.com/ads/library/?id=3430141647157598" target="_blank" rel="noopener">Versão 17s <span class="id">3430141647157598</span></a>
+            <a class="lnk sm" href="https://www.facebook.com/ads/library/?id=1803580014170373" target="_blank" rel="noopener">Versão 15s <span class="id">1803580014170373</span></a>
+          </div>
+        </div>
+        <div class="card occ">
+          <span class="badge b-neutro" style="align-self:flex-start">Jambalaia · delivery</span>
+          <h4>"Chega de pia cheia"</h4>
+          <div class="q">Associa a refeição ao descanso e à família, com a chamada para o WhatsApp. Não fala de cardápio, fala do alívio de não cozinhar nem lavar louça.</div>
+          <div class="p"><b>Função:</b> vender a situação, e não o prato. É o outro concorrente ativo na cidade.</div>
+          <a class="lnk" href="https://www.facebook.com/ads/library/?id=1400201128847668" target="_blank" rel="noopener">Ver a peça <span class="id">1400201128847668</span></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="card diag">
+        <h3 class="w"><span class="n">!</span> A leitura que importa</h3>
+        <p>Repare no que <strong>não</strong> está acontecendo ali. Nenhum anúncio genérico. Nenhuma peça tentando falar com todo mundo ao mesmo tempo.</p>
+        <p>São <strong>três frentes diferentes, três mensagens diferentes e três destinos diferentes</strong>: pedir agora, decidir uma visita por oferta e solicitar orçamento de grupo.</p>
+    <p>E <span class="ev g">três das cinco peças</span> estão na frente de eventos e confraternização, que é justamente a ocasião de maior ticket do calendário. <strong>Importante ser preciso aqui:</strong> essas três são variações da mesma frente, com durações diferentes, e não três estratégias distintas. Também não provam que a rede investe mais, porque a Biblioteca não mostra verba. O que elas mostram é <strong>prioridade de comunicação</strong>, e isso já basta.</p>
+        <p>Enquanto isso, na mesma consulta, a página da Toca não exibia nenhum anúncio ativo. E <strong>três dos cinco concorrentes diretos também não</strong>: Paulo do Peixe, Adega do Portuga e Bar do Juca estavam todos parados.</p>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="quote">
+        <p>A conclusão não é que a Toca está atrasada.<br>É que existe <em>uma avenida aberta na cidade</em>, e ela está sendo ocupada por uma rede nacional, sozinha.</p>
+      </div>
+    </div>
+
+    <div class="note info" style="margin-top:16px"><b>Honestidade de método.</b> A Biblioteca de Anúncios mostra criativos, durações e datas. Ela não mostra investimento, alcance, segmentação nem resultado. Anúncio ativo não prova que a campanha funciona, e ausência de anúncio não prova que a empresa nunca anunciou. O que ela revela, e isso já é muito valioso, são os <b>temas que a concorrência decidiu comprar</b>.</div>
+
+    <div class="note ok" style="margin-top:14px"><b>Todas as peças citadas estão linkadas nesta apresentação.</b> Basta clicar no botão de cada card para abrir a peça original na Biblioteca de Anúncios da Meta. O número ao lado é a identificação da peça: se alguma sair do ar, dá para buscar por esse número na própria biblioteca.</div>
+  </div>
+
+</section>
+
+<!-- ============ MERCADO E CALENDÁRIO ============ -->
+<section class="panel" id="p-mercado">
+
+  <div class="sec-h" style="margin-top:6px"><h2>Ninguém escolhe restaurante. Escolhe ocasião.</h2><p>Esse é o ponto que muda a forma de comunicar.</p></div>
+
+  <p class="lead" style="margin-bottom:16px">As pessoas não acordam querendo "um restaurante de frutos do mar". Elas acordam com <strong>uma situação para resolver</strong>. É o aniversário da mãe, é o domingo que precisa reunir todo mundo, é o sábado a dois, é a preguiça de cozinhar numa terça. Cada uma dessas situações tem uma dúvida diferente antes do sim.</p>
+
+  <div class="card tbl-wrap">
+    <table>
+      <thead><tr><th class="txt">Ocasião</th><th class="txt">Quem decide</th><th class="txt">O que precisa ser resolvido antes de ir</th><th class="txt">O que a Toca precisa provar</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Domingo em família</td><td class="txt">Quem organiza o encontro</td><td class="txt">Cardápio que agrade a todos, tamanho da porção, conforto, espera, criança e idoso</td><td class="txt">Prato compartilhado, espaço, serviço e acesso reais</td></tr>
+        <tr><td class="name">Jantar a dois</td><td class="txt">O casal</td><td class="txt">Ambiente, clima, horário e deslocamento</td><td class="txt">Luz e clima noturno, prato servido, atendimento</td></tr>
+        <tr><td class="name">Aniversário e comemoração</td><td class="txt">O anfitrião</td><td class="txt">Capacidade, reserva, previsibilidade e divisão da conta</td><td class="txt">Mesa de grupo e processo de reserva claro</td></tr>
+        <tr><td class="name">Encontro de equipe</td><td class="txt">O organizador da empresa</td><td class="txt">Espaço, orçamento por pessoa e tempo de serviço</td><td class="txt">Estrutura e proposta de grupo</td></tr>
+        <tr><td class="name">Almoço executivo</td><td class="txt">O trabalhador</td><td class="txt">Rapidez, preço, previsibilidade e localização</td><td class="txt">Menu e tempo compatíveis com a hora de almoço</td></tr>
+        <tr><td class="name">Delivery</td><td class="txt">Quem pede em casa</td><td class="txt">Prazo, embalagem e qualidade na chegada</td><td class="txt">Fotos fiéis, cardápio claro e canal de pedido</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note ok" style="margin-top:13px">Cada linha dessa tabela é <b>uma pessoa diferente, num momento diferente, com uma dúvida diferente</b>. Um único anúncio tentando falar com todas elas não fala com nenhuma. É exatamente por isso que o Coco Bambu separou pedido, buffet e eventos em campanhas distintas.</div>
+
+  <!-- ÁREA -->
+  <div class="sec">
+    <div class="sec-h"><h2>Até onde vale ir buscar gente</h2><p>O raio não é um número. É uma pergunta por ocasião.</p></div>
+
+    <div class="grid g3" style="margin-bottom:14px">
+      <div class="card kpi"><div class="lab">Volta Redonda</div><div class="val">279.971</div><div class="hint">Estimativa IBGE para 2025</div></div>
+      <div class="card kpi"><div class="lab">Barra Mansa</div><div class="val">181.679</div><div class="hint">Estimativa IBGE para 2025</div></div>
+      <div class="card kpi"><div class="lab">Pinheiral</div><div class="val">25.096</div><div class="hint">Estimativa IBGE para 2025</div></div>
+    </div>
+
+    <div class="note warn" style="margin-bottom:16px">A tentação é somar os três e dizer que existe "um público de quase meio milhão de pessoas". <b>Não vamos apresentar dessa forma.</b> Limite de município não é raio de deslocamento, e o número de habitantes não diz nada sobre renda, hábito ou vontade de sair para comer. O que importa é tempo de rota, não distância no mapa.</div>
+
+    <div class="card funil">
+      <div class="eyebrow" style="margin-bottom:14px">Como enxergamos a área de alcance</div>
+      <div class="frow"><div class="fside l"><span class="tag">Camada 1</span><br><span class="n">Proximidade imediata</span></div>
+        <div class="fbar acc"><span class="t">Volta Redonda e bairros próximos</span><span class="v">todas</span></div>
+        <div class="fside r">Serve para qualquer ocasião, inclusive almoço e delivery</div></div>
+      <div class="farrow">&#9660;</div>
+      <div class="frow"><div class="fside l"><span class="tag">Camada 2</span><br><span class="n">Cidades conectadas</span></div>
+        <div class="fbar"><span class="t">Barra Mansa, Pinheiral e entorno</span><span class="v">destino</span></div>
+        <div class="fside r">Faz sentido para ocasião planejada: domingo, comemoração, jantar</div></div>
+      <div class="farrow">&#9660;</div>
+      <div class="frow"><div class="fside l"><span class="tag">Camada 3</span><br><span class="n">Origem real</span></div>
+        <div class="fbar proj"><span class="t">De onde os clientes de fato vêm</span><span class="v">a definir</span></div>
+        <div class="fside r">Só a operação da Toca revela isso, e é o mais valioso dos três</div></div>
+    </div>
+
+    <div class="note info" style="margin-top:14px">Uma pessoa atravessa a cidade por um domingo especial. Ela não atravessa a cidade por um almoço de quarta-feira. <b>Por isso não existe um raio único, existe um raio por ocasião.</b></div>
+  </div>
+
+  <!-- CALENDÁRIO -->
+  <div class="sec">
+    <div class="sec-h"><h2>O ano de um restaurante de frutos do mar</h2><p>Os próximos 12 meses, com as datas já conhecidas.</p></div>
+
+    <p class="lead" style="margin-bottom:18px">Existe uma vantagem estrutural na categoria da Toca que quase nenhum restaurante da cidade tem: <strong>frutos do mar têm estação própria no calendário brasileiro</strong>. Não é uma data solta. É um ciclo que se repete todo ano, com hora marcada e com meses de antecedência conhecida.</p>
+
+    <div class="card" style="padding:22px">
+      <div class="seas">
+        <div class="seas-row"><div class="seas-lab">Out 2026</div><div class="seas-bar s-baixo">Baixa relativa. Dia das Crianças em 12 de outubro. <b>Janela para ocupar turno ocioso</b></div></div>
+        <div class="seas-row"><div class="seas-lab">Nov 2026</div><div class="seas-bar s-medio">Finados, Proclamação e Consciência Negra na sexta 20/11. Fim do mês com Black Friday no delivery</div></div>
+        <div class="seas-row"><div class="seas-lab">Dez 2026</div><div class="seas-bar s-pico"><b>CONFRATERNIZAÇÕES</b> · Natal na sexta 25/12 e Réveillon na quinta 31/12 · <b>mesa de grupo</b></div></div>
+        <div class="seas-row"><div class="seas-lab">Jan 2027</div><div class="seas-bar s-medio">Férias escolares e verão. Família e visitante regional</div></div>
+        <div class="seas-row"><div class="seas-lab">Fev 2027</div><div class="seas-bar s-alto">Carnaval na terça 09/02 e, no dia seguinte, <b>começa a Quaresma em 10/02</b></div></div>
+        <div class="seas-row"><div class="seas-lab">Fev a Mar</div><div class="seas-bar s-pico"><b>QUARESMA</b> · mais de 40 dias de consumo elevado de peixe no país inteiro</div></div>
+        <div class="seas-row"><div class="seas-lab">Mar 2027</div><div class="seas-bar s-pico"><b>SEMANA SANTA</b> de 22 a 28/03 · Sexta-feira Santa em <b>26 de março</b> · pico do ano</div></div>
+        <div class="seas-row"><div class="seas-lab">Abr 2027</div><div class="seas-bar s-medio">Descompressão depois do pico. Retomada de rotina</div></div>
+        <div class="seas-row"><div class="seas-lab">Mai 2027</div><div class="seas-bar s-pico"><b>DIA DAS MÃES</b> no domingo <b>09 de maio</b> · o maior almoço de família do ano</div></div>
+        <div class="seas-row"><div class="seas-lab">Jun 2027</div><div class="seas-bar s-alto"><b>DIA DOS NAMORADOS</b> em 12 de junho, que cai num <b>sábado</b> · jantar a dois</div></div>
+        <div class="seas-row"><div class="seas-lab">Jul 2027</div><div class="seas-bar s-medio">Férias escolares. Movimento de família e almoço prolongado</div></div>
+        <div class="seas-row"><div class="seas-lab">Ago 2027</div><div class="seas-bar s-alto"><b>DIA DOS PAIS</b> no domingo 08 de agosto · almoço em família</div></div>
+        <div class="seas-row"><div class="seas-lab">Set 2027</div><div class="seas-bar s-baixo">Baixa relativa. Independência em 07/09. Janela para ocupar turno ocioso</div></div>
+      </div>
+      <div class="leg" style="margin-top:16px">
+        <span><i style="background:var(--verde-d)"></i>Pico do ano</span>
+        <span><i style="background:#9AE8D4"></i>Alto</span>
+        <span><i style="background:#DDF3EC"></i>Médio</span>
+        <span><i style="background:#F0F3F2"></i>Baixa, janela de oportunidade</span>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><h2>Os quatro momentos que definem o ano</h2></div>
+      <div class="card diag">
+        <h3><span class="n">1</span> Quaresma e Semana Santa: o território natural da Toca</h3>
+        <p>A Semana Santa <strong>não é um dia</strong>. A Quaresma começa em <span class="ev g">10 de fevereiro de 2027</span> e vai até 28 de março. São <strong>mais de 40 dias</strong> em que o consumo de peixe sobe no país inteiro, culminando na Sexta-feira Santa, dia <span class="ev g">26 de março</span>.</p>
+        <p>Para uma churrascaria, essa é a pior época do ano. Para a Toca, é a época em que a categoria dela <strong>vira a escolha padrão do Brasil inteiro</strong>. Isso não é campanha de uma semana. É temporada, e temporada se prepara com antecedência.</p>
+
+        <h3><span class="n">2</span> Dia das Mães: o maior domingo do calendário</h3>
+        <p><span class="ev g">09 de maio de 2027</span>, domingo. É tradicionalmente um dos dias de maior movimento do setor de restaurantes no Brasil, e a ocasião é exatamente a que a Toca quer ocupar: <strong>almoço de domingo em família, mesa grande, prato compartilhado</strong>. É o alinhamento mais perfeito entre data e posicionamento no ano todo.</p>
+
+        <h3><span class="n">3</span> Dia dos Namorados caindo num sábado</h3>
+        <p><span class="ev g">12 de junho de 2027</span> cai num <strong>sábado</strong>, e isso é mais relevante do que parece. Quando a data cai em dia útil, boa parte do jantar a dois se dispersa entre quem trabalha no dia seguinte. Num sábado, a noite inteira pertence à data.</p>
+
+        <h3><span class="n">4</span> Dezembro: a mesa que vale mais</h3>
+        <p>Confraternização de empresa é a ocasião de <strong>maior ticket e maior previsibilidade</strong> do ano: mesa cheia, decidida com semanas de antecedência, com um organizador só para convencer. É exatamente a frente em que o Coco Bambu concentra três das cinco peças dele.</p>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="quote">
+        <p>Os picos do ano são conhecidos com meses de antecedência.<br>A diferença entre <em>lucrar neles</em> e apenas sobreviver a eles é o tempo de preparação.</p>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ============ DIRECIONAMENTO ============ -->
+<section class="panel" id="p-estrategia">
+
+  <div class="sec-h" style="margin-top:6px"><h2>A tese</h2><p>O que a gente quer que a Toca seja na cabeça da cidade.</p></div>
+
+  <div class="quote" style="margin-bottom:18px">
+    <p>A Toca não precisa aparecer para quem já está com fome.<br>Precisa ser <em>a primeira casa lembrada</em> quando alguém decide onde vai reunir as pessoas que importam.</p>
+  </div>
+
+  <div class="card diag" style="margin-bottom:16px">
+    <h3><span class="n">?</span> Por que essa direção</h3>
+    <p>Quem está com fome resolve em quinze minutos, com o que estiver mais perto. Essa é uma disputa de <strong>conveniência</strong>, e ela é ganha por quem entrega mais rápido ou cobra menos. Não é uma boa briga para uma casa de 32 anos com prato assinatura.</p>
+    <p>A decisão que interessa à Toca acontece <strong>antes</strong>. É a conversa de quinta-feira sobre o que fazer no domingo. É a pergunta "onde a gente comemora?". É o casal escolhendo o sábado à noite na terça.</p>
+    <p>Nesse momento, a pessoa quase não pesquisa. Ela <strong>lembra</strong>. E ela lembra de quem construiu presença antes da hora da decisão, não de quem apareceu no minuto dela.</p>
+  </div>
+
+  <div class="card funil">
+    <div class="eyebrow" style="margin-bottom:14px">Os quatro movimentos</div>
+    <div class="frow"><div class="fside l"><span class="n">Lembrança</span></div>
+      <div class="fbar acc"><span class="t">Estar na cabeça de quem decide</span><span class="v">1</span></div>
+      <div class="fside r">Antes da hora de decidir, na região certa</div></div>
+    <div class="farrow">&#9660;</div>
+    <div class="frow"><div class="fside l"><span class="n">Prova</span></div>
+      <div class="fbar"><span class="t">Mostrar a experiência real</span><span class="v">2</span></div>
+      <div class="fside r">A visita completa, e não apenas o prato</div></div>
+    <div class="farrow">&#9660;</div>
+    <div class="frow"><div class="fside l"><span class="n">Captura</span></div>
+      <div class="fbar"><span class="t">Aparecer para quem já procura</span><span class="v">3</span></div>
+      <div class="fside r">Quem digita frutos do mar em Volta Redonda</div></div>
+    <div class="farrow">&#9660;</div>
+    <div class="frow"><div class="fside l"><span class="n">Ação</span></div>
+      <div class="fbar proj"><span class="t">Um caminho claro para cada intenção</span><span class="v">4</span></div>
+      <div class="fside r">Reservar, chegar e pedir, separados</div></div>
+  </div>
+
+  <!-- FRENTES -->
+  <div class="sec">
+    <div class="sec-h"><h2>Como trabalharíamos</h2><p>Direcionamento de trabalho. A estrutura de campanha se define com os números da casa.</p></div>
+
+    <div class="grid g3">
+      <div class="card frente">
+        <div class="num">1</div>
+        <h4>Presença e lembrança</h4>
+        <div class="fn">Fazer a Toca ocupar espaço na memória de quem decide, na região certa, antes da hora da escolha.</div>
+        <ul>
+          <li>Construir material que mostre a experiência completa da visita, e não apenas o prato</li>
+          <li>Trabalhar os pratos assinatura como âncora de memória: Pintado na Brasa, Camarão Praiano e Casquinha de Siri</li>
+          <li>Distribuir por ocasião, com mensagens próprias para domingo em família, jantar a dois e comemoração</li>
+          <li>Controlar a repetição para manter presença sem cansar quem já viu</li>
+        </ul>
+        <div class="obs"><b>O que observamos:</b> alcance na região certa, repetição por pessoa, atenção real ao conteúdo, aumento de busca pelo nome da marca e pedidos de rota.</div>
+      </div>
+
+      <div class="card frente">
+        <div class="num">2</div>
+        <h4>Captura de quem já procura</h4>
+        <div class="fn">Estar presente no momento em que alguém digita "restaurante de frutos do mar em Volta Redonda".</div>
+        <ul>
+          <li>Alinhar a informação entre Google, Instagram e cardápio: horário, endereço, preço e itens</li>
+          <li>Separar os caminhos de reserva, rota e delivery, para que cada intenção tenha destino e leitura próprios</li>
+          <li>Trabalhar os termos de intenção real da categoria na região</li>
+          <li>Usar as publicações da ficha do Google para as ocasiões e datas do calendário</li>
+        </ul>
+        <div class="obs"><b>O que observamos:</b> pedidos de rota, ligações, cliques no cardápio e reservas iniciadas.</div>
+      </div>
+
+      <div class="card frente" style="border-color:var(--verde);border-width:2px">
+        <div class="num">3</div>
+        <h4>Ocasião e grupo</h4>
+        <div class="fn">Ocupar a mesa de maior valor: a comemoração, o aniversário e a confraternização de empresa.</div>
+        <ul>
+          <li>Construir comunicação específica para grupos, separada da comunicação de prato</li>
+          <li>Preparar as datas do calendário com antecedência real: Quaresma e Semana Santa, Dia das Mães, Dia dos Namorados e dezembro</li>
+          <li>Tornar o processo de reserva de grupo claro e sem fricção</li>
+          <li>Ocupar o espaço que hoje só uma rede nacional está disputando na cidade</li>
+        </ul>
+        <div class="obs"><b>O que observamos:</b> consultas de reserva, reservas efetivadas, comparecimento e tamanho da mesa.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUARTA FRENTE: YOUTUBE -->
+  <div class="sec">
+    <div class="sec-h"><h2>A quarta frente</h2><p>Não entra agora, mas entra. E vale explicar por quê.</p></div>
+
+    <div class="card" style="padding:0;overflow:hidden;border-color:var(--verde);border-width:2px">
+      <div style="background:linear-gradient(150deg,var(--preto),#1a2321);padding:28px 30px;position:relative;overflow:hidden">
+        <div style="position:absolute;right:-130px;top:-190px;width:450px;height:450px;border-radius:50%;background:radial-gradient(circle at center, rgba(0,202,158,.24), rgba(0,202,158,0) 65%)"></div>
+        <div style="position:relative;z-index:2">
+          <div class="eyebrow" style="color:var(--verde)">Expansão · YouTube na televisão</div>
+          <h3 style="font-family:'Baloo 2';font-size:clamp(19px,2.2vw,26px);font-weight:800;color:#fff;margin:9px 0 12px;line-height:1.25">A sala de estar é a sala de decisão.</h3>
+          <p style="font-size:14px;line-height:1.7;color:rgba(255,255,255,.78);max-width:800px">A conversa que interessa à Toca não acontece no feed, com a pessoa sozinha no ônibus. Ela acontece <strong style="color:#fff;font-weight:600">na sala, com a televisão ligada e todo mundo junto</strong>. Quando alguém pergunta "e domingo, a gente faz o quê?", as pessoas que vão decidir estão todas no mesmo sofá.</p>
+          <p style="font-size:14px;line-height:1.7;color:rgba(255,255,255,.78);max-width:800px;margin-top:12px">O YouTube na televisão é o único lugar que alcança <strong style="color:var(--verde);font-weight:600">a mesa inteira ao mesmo tempo</strong>, e não uma pessoa só. Para uma casa que vende ocasião, e não fome, isso encaixa melhor do que qualquer outro espaço.</p>
+        </div>
+      </div>
+
+      <div style="padding:24px">
+        <div class="grid g2">
+          <div class="frente" style="padding:0">
+            <h4 style="margin-bottom:10px">Por que faz sentido para a Toca</h4>
+            <ul>
+              <li>Alcança o grupo que decide junto, não o indivíduo que rola o feed sozinho</li>
+              <li>É o encaixe mais direto da nossa tese: ser lembrada na hora em que a família conversa sobre o fim de semana</li>
+              <li>A peça do domingo em família, que a gente já vai produzir, é exatamente a que funciona nesse espaço</li>
+              <li>Na televisão, o vídeo é visto com som, inteiro e sem pressa, o que quase nunca acontece no celular</li>
+            </ul>
+          </div>
+          <div class="frente" style="padding:0">
+            <h4 style="margin-bottom:10px">Por que ainda não é a hora</h4>
+            <ul style="--c:var(--alerta)">
+              <li>A Toca ainda não tem nenhuma campanha no ar. A primeira pergunta não é qual canal escolher, é existir em algum</li>
+              <li>Na televisão não existe clique. A medição passa a depender de busca pela marca, pedido de rota e movimento por turno, e isso precisa de uma linha de base que ainda não temos</li>
+              <li>O material da Toca vai nascer vertical, para celular. Televisão é horizontal, e isso significa outra montagem</li>
+              <li>Abrir três frentes de uma vez divide a atenção e não ensina nada sobre nenhuma delas</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="note ok" style="margin-top:18px"><b>Quando entra.</b> Ancorado em data, e não ligado o ano inteiro. As três janelas naturais são <b>dezembro das confraternizações</b>, a <b>Quaresma e a Semana Santa</b> e o <b>Dia das Mães</b>. Nessas semanas a casa tem um motivo real para estar na sala das pessoas, e o vídeo de família já vai existir produzido.</div>
+
+        <div class="note warn" style="margin-top:12px"><b>O que ainda não sabemos.</b> Nossa varredura de anúncios cobriu a Biblioteca da Meta. <b>Não verificamos Google Ads nem YouTube de nenhum concorrente.</b> Então não dá para afirmar que o espaço está tão livre ali quanto está no Facebook e no Instagram. Isso é uma checagem a fazer antes de investir, e não uma suposição que a gente vai vender como certeza.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MEDIÇÃO -->
+  <div class="sec">
+    <div class="sec-h"><h2>Como medimos</h2><p>Por que "quantas mensagens chegaram" não é a pergunta certa.</p></div>
+
+    <div class="grid g2" style="margin-bottom:14px">
+      <div class="note warn">Existe um jeito confortável e errado de medir marketing de restaurante: contar curtida, visualização e mensagem no direct. O problema é simples. Para o salão, <b>a maior parte das pessoas decide e vai</b>. Ela não manda mensagem antes, não avisa que viu o anúncio, ela só aparece. Medir só por mensagem leva à conclusão de que campanha de salão não funciona, quando na verdade estávamos medindo a coisa errada.</div>
+      <div class="note info">E o outro lado vale igual. <b>Visualização de vídeo não paga conta.</b> Alcance prova distribuição, não lembrança. Curtida não prova visita. Nenhum desses números é mentira, eles só não são o fim da linha.</div>
+    </div>
+
+    <div class="card tbl-wrap">
+      <table>
+        <thead><tr><th class="txt">Nível</th><th class="txt">O que ele mostra</th><th class="txt">O que ele não mostra</th></tr></thead>
+        <tbody>
+          <tr><td class="name"><span class="badge b-alcance">1</span> Exposição<br><span style="font-weight:400;color:var(--cinza);font-size:11.5px">alcance e repetição</span></td><td class="txt">Que a mensagem chegou às pessoas certas, na região certa</td><td class="txt">Se alguém prestou atenção nela</td></tr>
+          <tr><td class="name"><span class="badge b-video">2</span> Atenção<br><span style="font-weight:400;color:var(--cinza);font-size:11.5px">retenção e conclusão</span></td><td class="txt">Que o conteúdo prendeu e foi assistido de verdade</td><td class="txt">Se gerou vontade de ir</td></tr>
+          <tr><td class="name"><span class="badge b-perfil">3</span> Intenção<br><span style="font-weight:400;color:var(--cinza);font-size:11.5px">rota, ligação, cardápio</span></td><td class="txt">Que a pessoa saiu do lugar e começou a se mover</td><td class="txt">Se ela chegou até a mesa</td></tr>
+          <tr class="me"><td class="name"><span class="badge b-conversa">4</span> Negócio<br><span style="font-weight:400;font-size:11.5px">mesas, pedidos, retorno</span></td><td class="txt">O que de fato aconteceu na operação</td><td class="txt">Este é o nível que decide</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note ok" style="margin-top:14px">Cada peça tem um trabalho, e a gente julga cada uma <b>pelo trabalho dela</b>. Conteúdo de lembrança se mede por presença e busca da marca. Anúncio de delivery se mede por pedido. Anúncio de grupo se mede por reserva efetivada. Misturar os três num número só é como avaliar cozinha, salão e caixa pelo mesmo indicador.</div>
+  </div>
+
+  <!-- O QUE SÓ VOCÊS TÊM -->
+  <div class="sec">
+    <div class="sec-h"><h2>O que só vocês têm</h2><p>Onde a pesquisa externa termina e a precisão começa.</p></div>
+
+    <p class="lead" style="margin-bottom:16px">Tudo nesta apresentação veio de fontes públicas, e é suficiente para saber por onde começar. Mas existe uma camada de informação que nenhuma pesquisa externa alcança, e que está <strong>dentro da operação de vocês</strong>. É ela que transforma direcionamento em precisão.</p>
+
+    <div class="grid g3">
+      <div class="card ask"><span class="badge b-conversa">Capacidade</span><h4 style="margin-top:8px">Quais turnos enchem e quais têm espaço</h4><p>Não adianta lotar um domingo que já opera no limite, porque isso vira fila, espera e avaliação ruim. O ganho real está onde existe mesa sobrando.</p></div>
+      <div class="card ask"><span class="badge b-alcance">Origem</span><h4 style="margin-top:8px">De onde os clientes vêm de verdade</h4><p>Esse dado define a área de trabalho melhor do que qualquer estimativa de população. É a camada 3 que a gente não consegue ver de fora.</p></div>
+      <div class="card ask"><span class="badge b-perfil">Mesa</span><h4 style="margin-top:8px">Quantas pessoas por mesa e o que pedem</h4><p>É isso que define qual prato merece virar herói de comunicação, e não o que tem a foto mais bonita.</p></div>
+      <div class="card ask"><span class="badge b-video">Canais</span><h4 style="margin-top:8px">Quanto vem do salão, da loja própria e dos aplicativos</h4><p>Cada canal tem uma margem diferente. Faz diferença empurrar a pessoa para onde a casa ganha mais.</p></div>
+      <div class="card ask"><span class="badge b-conversa">Grupos</span><h4 style="margin-top:8px">Quantas comemorações acontecem por mês</h4><p>E, principalmente, quantas se perdem por demora na resposta ou por falta de uma condição clara.</p></div>
+      <div class="card ask"><span class="badge b-neutro">Estrutura</span><h4 style="margin-top:8px">Estacionamento, espaço de grupo, acessibilidade</h4><p>Tudo isso é argumento de venda forte, mas só pode ser anunciado depois de confirmado com vocês.</p></div>
+    </div>
+
+    <div class="note info" style="margin-top:16px">A gente chegou até aqui <b>sem entrar na casa</b>. Com os números de vocês, a gente para de estimar e começa a apontar.</div>
+  </div>
+
+  <!-- FECHAMENTO -->
+  <div class="sec">
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="quote" style="border-radius:0;padding:38px 34px">
+        <div class="eyebrow" style="color:var(--verde);position:relative;z-index:2;margin-bottom:12px">O trabalho</div>
+        <p style="margin-bottom:16px">A Toca do Pintado tem 32 anos, 2.707 avaliações e uma nota que a maioria dos restaurantes do país não alcança. <em>Isso é patrimônio.</em></p>
+        <p style="font-size:clamp(16px,1.7vw,19px);font-weight:600;line-height:1.5;color:rgba(255,255,255,.82)">O que a gente encontrou não foi um negócio com problema. Foi um negócio com um ativo enorme e uma avenida aberta na frente: a lembrança da cidade na hora em que as pessoas decidem onde vão reunir quem importa. Hoje, essa avenida está sendo ocupada por uma rede nacional, sozinha.</p>
+        <p style="margin-top:20px">Transformar 32 anos de reputação em <em>lembrança ativa</em>,<br>e lembrança ativa em <em>mesa ocupada</em>.</p>
+        <div class="who">Keepads · Análise e direcionamento para a Toca do Pintado</div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ============ REFERÊNCIAS CRIATIVAS ============ -->
+<section class="panel" id="p-referencias">
+
+  <div class="sec-h" style="margin-top:6px"><h2>Referências criativas</h2><p>As 14 peças que analisamos, todas com link direto para assistir.</p></div>
+
+  <p class="lead" style="margin-bottom:16px">Este é o banco de peças que levantamos na Biblioteca de Anúncios da Meta. Seis são de <strong>concorrentes da região</strong>, e aparecem na aba de Concorrência. As outras oito são de <strong>marcas de fora</strong>, que não disputam nenhuma mesa em Volta Redonda e entram aqui como referência de linguagem e formato. Todas podem ser abertas clicando no botão de cada card.</p>
+
+  <!-- SELEÇÃO CURTA -->
+  <div class="card" style="padding:24px;background:linear-gradient(150deg,var(--preto),#1a2321);border-color:var(--preto);margin-bottom:18px;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-140px;top:-200px;width:470px;height:470px;border-radius:50%;background:radial-gradient(circle at center, rgba(0,202,158,.22), rgba(0,202,158,0) 65%)"></div>
+    <div style="position:relative;z-index:2">
+      <div class="eyebrow" style="color:var(--verde)">Se for mostrar só três coisas</div>
+      <h3 style="font-size:19px;margin:7px 0 6px;color:#fff">A seleção curta</h3>
+      <p style="font-size:13px;color:rgba(255,255,255,.62);line-height:1.6;margin-bottom:18px;max-width:780px">Três duplas de peças que, juntas, contam o argumento inteiro sem precisar abrir as outras oito.</p>
+      <div class="grid g3">
+        <div style="background:rgba(255,255,255,.06);border-radius:11px;padding:17px 18px">
+          <div style="font-family:'Baloo 2';font-size:13px;font-weight:800;color:var(--verde);margin-bottom:7px">1 · Concorrência local</div>
+          <div style="font-size:12.5px;color:rgba(255,255,255,.72);line-height:1.55;margin-bottom:11px">Duas decisões de compra completamente diferentes, compradas na mesma cidade.</div>
+          <a class="lnk sm" href="https://www.facebook.com/ads/library/?id=1771844550624633" target="_blank" rel="noopener">Coco Bambu, eventos <span class="id">1771844550624633</span></a>
+          <a class="lnk sm" href="https://www.facebook.com/ads/library/?id=1400201128847668" target="_blank" rel="noopener">Jambalaia, delivery <span class="id">1400201128847668</span></a>
+        </div>
+        <div style="background:rgba(255,255,255,.06);border-radius:11px;padding:17px 18px">
+          <div style="font-family:'Baloo 2';font-size:13px;font-weight:800;color:var(--verde);margin-bottom:7px">2 · Criativo de experiência</div>
+          <div style="font-size:12.5px;color:rgba(255,255,255,.72);line-height:1.55;margin-bottom:11px">Como outras culinárias vendem mais do que a imagem isolada do prato.</div>
+          <a class="lnk sm" href="https://www.facebook.com/ads/library/?id=1609038233695789" target="_blank" rel="noopener">Gendai, posicionamento <span class="id">1609038233695789</span></a>
+          <a class="lnk sm" href="https://www.facebook.com/ads/library/?id=1913265592965524" target="_blank" rel="noopener">Outback, compartilhar <span class="id">1913265592965524</span></a>
+        </div>
+        <div style="background:rgba(255,255,255,.06);border-radius:11px;padding:17px 18px">
+          <div style="font-family:'Baloo 2';font-size:13px;font-weight:800;color:var(--verde);margin-bottom:7px">3 · Prato assinatura e família</div>
+          <div style="font-size:12.5px;color:rgba(255,255,255,.72);line-height:1.55;margin-bottom:11px">Prato assinatura e domingo em família, na casa mais parecida com a Toca.</div>
+          <a class="lnk sm" href="https://www.facebook.com/ads/library/?id=4577613792514845" target="_blank" rel="noopener">Toca da Traíra, pintado <span class="id">4577613792514845</span></a>
+          <a class="lnk sm" href="https://www.facebook.com/ads/library/?id=1116267387630927" target="_blank" rel="noopener">Toca da Traíra, domingo <span class="id">1116267387630927</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note warn" style="margin-bottom:18px"><b>Antes da reunião:</b> abra essas seis peças no computador que vai apresentar. A Biblioteca de Anúncios pode pedir login e a Meta pode tirar uma peça do ar depois que a veiculação termina. Se alguma cair, o número ao lado do link serve para buscar direto na biblioteca.</div>
+
+  <!-- REFERÊNCIAS DE FORA DA REGIÃO -->
+  <div class="sec">
+    <div class="sec-h"><h2>Referências de fora da região</h2><p>Marcas que não disputam cliente com a Toca, mas mostram caminhos de linguagem.</p></div>
+
+    <div class="note warn" style="margin-bottom:16px">Estas marcas <b>não são concorrentes geográficos</b> da Toca e não estão na disputa por nenhuma mesa em Volta Redonda. Elas entram aqui como referência de linguagem e formato, para mostrar o que outras casas estão veiculando. Nenhuma delas é exemplo de retorno comprovado.</div>
+
+    <div class="card" style="padding:24px;border-color:var(--verde);border-width:2px;margin-bottom:16px">
+      <div class="eyebrow">O caso mais parecido que encontramos</div>
+      <h3 style="font-size:19px;margin:7px 0 4px">Toca da Traíra, em Campinas</h3>
+      <p class="body" style="margin-bottom:14px">Mesma categoria, mesmo prato assinatura e praticamente a mesma lógica de negócio da Toca do Pintado. Vale olhar com atenção porque mostra <strong>como uma casa de peixe comunica quando decide não vender apenas a foto do prato</strong>.</p>
+      <div class="grid g3">
+        <div class="card occ" style="box-shadow:none">
+          <span class="badge b-conversa" style="align-self:flex-start">Prato assinatura</span>
+          <h4>"Rei do Pintado na Brasa"</h4>
+          <div class="q">Vídeo de 46 segundos que junta prato assinatura, tradição declarada e localização da unidade na mesma peça.</div>
+          <div class="p"><b>O paralelo:</b> a Toca do Pintado tem o mesmo prato e uma tradição ainda mais antiga, de 1994, e hoje não usa isso em mídia.</div>
+          <a class="lnk" href="https://www.facebook.com/ads/library/?id=4577613792514845" target="_blank" rel="noopener">Ver a peça <span class="id">4577613792514845</span></a>
+        </div>
+        <div class="card occ" style="box-shadow:none">
+          <span class="badge b-perfil" style="align-self:flex-start">Domingo em família</span>
+          <h4>Personagens e área kids</h4>
+          <div class="q">Comunicação de ocasião familiar informando dia, horário e a estrutura disponível para as crianças.</div>
+          <div class="p"><b>Ressalva:</b> só serve de inspiração se a Toca tiver estrutura equivalente. É o tipo de promessa que precisa ser confirmada antes de ir ao ar.</div>
+          <a class="lnk" href="https://www.facebook.com/ads/library/?id=1116267387630927" target="_blank" rel="noopener">Ver a peça <span class="id">1116267387630927</span></a>
+        </div>
+        <div class="card occ" style="box-shadow:none">
+          <span class="badge b-video" style="align-self:flex-start">Oferta para dois</span>
+          <h4>Peixe e camarão, porção para duas pessoas</h4>
+          <div class="q">Oferta de consumo no local com porção, preço, validade e regras detalhadas, sem deixar dúvida sobre o que está incluso.</div>
+          <div class="p"><b>O paralelo:</b> a Toca já tem combinações assim no cardápio, como o Pintado com Praiano indicado para duas pessoas.</div>
+          <a class="lnk" href="https://www.facebook.com/ads/library/?id=933504305900644" target="_blank" rel="noopener">Ver a peça <span class="id">933504305900644</span></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card occ ref">
+        <h4>Outback Brasil</h4>
+        <div class="origem">Produto feito para compartilhar</div>
+        <div class="q">As peças de boards vendem um produto pensado para reunir gente, não um prato individual. O texto chama a turma e enumera as opções. As duas versões, de 10 e de 30 segundos, ocupam o mesmo território em durações diferentes.</div>
+        <div class="p"><b>O que aproveitar:</b> a Toca vende porção compartilhada por natureza. Isso pode ser dito de forma explícita, em vez de ficar implícito na foto.</div>
+        <div class="pecas">
+          <a class="lnk sm" href="https://www.facebook.com/ads/library/?id=1913265592965524" target="_blank" rel="noopener">Boards 10s <span class="id">1913265592965524</span></a>
+          <a class="lnk sm" href="https://www.facebook.com/ads/library/?id=3277109885805470" target="_blank" rel="noopener">Boards 30s <span class="id">3277109885805470</span></a>
+        </div>
+      </div>
+
+      <div class="card occ ref">
+        <h4>Gendai e Gendai Premium</h4>
+        <div class="origem">Posicionamento, novidade e prova pessoal</div>
+        <div class="q">A peça de 51 segundos tenta diferenciar experiência e preparo em vez de brigar por preço. Outra, de 21 segundos, usa o relato de uma criadora consumindo em casa. A terceira apresenta um lançamento com sensação de disponibilidade limitada.</div>
+        <div class="p"><b>O que aproveitar:</b> é o exemplo mais direto de uma marca dizendo por que ela vale a escolha, e não quanto ela custa.</div>
+        <div class="pecas">
+          <a class="lnk sm" href="https://www.facebook.com/ads/library/?id=1609038233695789" target="_blank" rel="noopener">Posicionamento 51s <span class="id">1609038233695789</span></a>
+          <a class="lnk sm" href="https://www.facebook.com/ads/library/?id=2520510311718107" target="_blank" rel="noopener">Criadora 21s <span class="id">2520510311718107</span></a>
+          <a class="lnk sm" href="https://www.facebook.com/ads/library/?id=1580065187122387" target="_blank" rel="noopener">Lançamento 40s <span class="id">1580065187122387</span></a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sec">
+      <div class="card diag">
+        <h3><span class="n">=</span> O que todas elas têm em comum</h3>
+        <p>Nenhuma dessas marcas está anunciando apenas a imagem bonita de um prato. Todas vendem <strong>uma situação</strong>: a mesa que se compartilha, o motivo de escolher aquela casa, a novidade que vale experimentar, o domingo que resolve o dia da família.</p>
+        <p>É exatamente a segunda camada que faltava na amostra do Instagram da Toca. A diferença é que aqui ela aparece como <strong>decisão deliberada de comunicação</strong>, feita por marcas que investem em mídia com constância.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÍNDICE COMPLETO -->
+  <div class="sec">
+    <div class="sec-h"><h2>Índice completo das 14 peças</h2><p>Tudo que foi levantado, em uma tabela só, para consulta rápida.</p></div>
+    <div class="card tbl-wrap">
+      <table>
+        <thead><tr><th class="txt">Marca</th><th class="txt">Peça</th><th>Duração</th><th class="txt">Território</th><th class="txt">Abrir</th></tr></thead>
+        <tbody>
+          <tr><td class="name">Coco Bambu VR <span class="badge b-erro">Local</span></td><td class="txt">"Bateu a vontade?"</td><td>9s</td><td class="txt">Desejo imediato e pedido</td><td class="txt"><a class="lnk sm" style="margin:0" href="https://www.facebook.com/ads/library/?id=2281154679400897" target="_blank" rel="noopener">ver <span class="id">2281154679400897</span></a></td></tr>
+          <tr><td class="name">Coco Bambu VR <span class="badge b-erro">Local</span></td><td class="txt">Buffet camarão à vontade</td><td>52s</td><td class="txt">Oferta para visita ao salão</td><td class="txt"><a class="lnk sm" style="margin:0" href="https://www.facebook.com/ads/library/?id=1598966408285271" target="_blank" rel="noopener">ver <span class="id">1598966408285271</span></a></td></tr>
+          <tr><td class="name">Coco Bambu VR <span class="badge b-erro">Local</span></td><td class="txt">Eventos, versão longa</td><td>38s</td><td class="txt">Ocasião de grupo e orçamento</td><td class="txt"><a class="lnk sm" style="margin:0" href="https://www.facebook.com/ads/library/?id=1771844550624633" target="_blank" rel="noopener">ver <span class="id">1771844550624633</span></a></td></tr>
+          <tr><td class="name">Coco Bambu VR <span class="badge b-erro">Local</span></td><td class="txt">Eventos, variação</td><td>17s</td><td class="txt">Ocasião de grupo e orçamento</td><td class="txt"><a class="lnk sm" style="margin:0" href="https://www.facebook.com/ads/library/?id=3430141647157598" target="_blank" rel="noopener">ver <span class="id">3430141647157598</span></a></td></tr>
+          <tr><td class="name">Coco Bambu VR <span class="badge b-erro">Local</span></td><td class="txt">Eventos, variação curta</td><td>15s</td><td class="txt">Ocasião de grupo e orçamento</td><td class="txt"><a class="lnk sm" style="margin:0" href="https://www.facebook.com/ads/library/?id=1803580014170373" target="_blank" rel="noopener">ver <span class="id">1803580014170373</span></a></td></tr>
+          <tr><td class="name">Jambalaia <span class="badge b-erro">Local</span></td><td class="txt">"Chega de pia cheia"</td><td class="na">n/d</td><td class="txt">Conveniência e descanso</td><td class="txt"><a class="lnk sm" style="margin:0" href="https://www.facebook.com/ads/library/?id=1400201128847668" target="_blank" rel="noopener">ver <span class="id">1400201128847668</span></a></td></tr>
+          <tr class="me"><td class="name">Toca da Traíra <span class="badge b-conversa">Espelho</span></td><td class="txt">"Rei do Pintado na Brasa"</td><td>46s</td><td class="txt">Prato assinatura e tradição</td><td class="txt"><a class="lnk sm" style="margin:0" href="https://www.facebook.com/ads/library/?id=4577613792514845" target="_blank" rel="noopener">ver <span class="id">4577613792514845</span></a></td></tr>
+          <tr class="me"><td class="name">Toca da Traíra <span class="badge b-conversa">Espelho</span></td><td class="txt">Domingo com personagens e área kids</td><td class="na">n/d</td><td class="txt">Ocasião em família</td><td class="txt"><a class="lnk sm" style="margin:0" href="https://www.facebook.com/ads/library/?id=1116267387630927" target="_blank" rel="noopener">ver <span class="id">1116267387630927</span></a></td></tr>
+          <tr class="me"><td class="name">Toca da Traíra <span class="badge b-conversa">Espelho</span></td><td class="txt">Peixe e camarão, porção para dois</td><td class="na">n/d</td><td class="txt">Oferta com regra clara</td><td class="txt"><a class="lnk sm" style="margin:0" href="https://www.facebook.com/ads/library/?id=933504305900644" target="_blank" rel="noopener">ver <span class="id">933504305900644</span></a></td></tr>
+          <tr><td class="name">Outback <span class="badge b-neutro">Fora</span></td><td class="txt">Boards e acompanhamentos</td><td>10s</td><td class="txt">Produto para compartilhar</td><td class="txt"><a class="lnk sm" style="margin:0" href="https://www.facebook.com/ads/library/?id=1913265592965524" target="_blank" rel="noopener">ver <span class="id">1913265592965524</span></a></td></tr>
+          <tr><td class="name">Outback <span class="badge b-neutro">Fora</span></td><td class="txt">Boards, versão longa</td><td>30s</td><td class="txt">Produto para compartilhar</td><td class="txt"><a class="lnk sm" style="margin:0" href="https://www.facebook.com/ads/library/?id=3277109885805470" target="_blank" rel="noopener">ver <span class="id">3277109885805470</span></a></td></tr>
+          <tr><td class="name">Gendai Premium <span class="badge b-neutro">Fora</span></td><td class="txt">"Menos rodízio, mais Festival"</td><td>51s</td><td class="txt">Posicionamento e preparo</td><td class="txt"><a class="lnk sm" style="margin:0" href="https://www.facebook.com/ads/library/?id=1609038233695789" target="_blank" rel="noopener">ver <span class="id">1609038233695789</span></a></td></tr>
+          <tr><td class="name">Gendai Premium <span class="badge b-neutro">Fora</span></td><td class="txt">Criadora e delivery</td><td>21s</td><td class="txt">Prova pessoal e relato</td><td class="txt"><a class="lnk sm" style="margin:0" href="https://www.facebook.com/ads/library/?id=2520510311718107" target="_blank" rel="noopener">ver <span class="id">2520510311718107</span></a></td></tr>
+          <tr><td class="name">Gendai <span class="badge b-neutro">Fora</span></td><td class="txt">Lançamento Push Pop</td><td>40s</td><td class="txt">Novidade e disponibilidade</td><td class="txt"><a class="lnk sm" style="margin:0" href="https://www.facebook.com/ads/library/?id=1580065187122387" target="_blank" rel="noopener">ver <span class="id">1580065187122387</span></a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><h2>Bibliotecas por página</h2><p>Se uma peça sair do ar, a biblioteca da página mostra o que estiver ativo naquele momento.</p></div>
+    <div class="card" style="padding:20px;display:flex;flex-wrap:wrap;gap:8px">
+      <a class="lnk" style="margin:0" href="https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=BR&search_type=page&view_all_page_id=420145137858269" target="_blank" rel="noopener">Coco Bambu Volta Redonda</a>
+      <a class="lnk" style="margin:0" href="https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=BR&search_type=page&view_all_page_id=166268333424788" target="_blank" rel="noopener">Restaurante Jambalaia</a>
+      <a class="lnk" style="margin:0" href="https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=BR&q=Toca%20da%20Tra%C3%ADra&search_type=keyword_unordered" target="_blank" rel="noopener">Toca da Traíra</a>
+      <a class="lnk" style="margin:0" href="https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=BR&search_type=page&view_all_page_id=149593841723519" target="_blank" rel="noopener">Outback Brasil</a>
+      <a class="lnk" style="margin:0" href="https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=BR&search_type=page&view_all_page_id=1443435502628475" target="_blank" rel="noopener">Gendai Premium</a>
+      <a class="lnk" style="margin:0" href="https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=BR&search_type=page&view_all_page_id=731624016864670" target="_blank" rel="noopener">Toca do Pintado</a>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="note info"><b>Sobre estes links.</b> Cada um abre a peça original na Biblioteca de Anúncios da Meta, que é pública. A biblioteca mostra o criativo, a duração e a data de veiculação. Ela não mostra investimento, alcance, segmentação nem resultado, então nenhuma peça desta aba deve ser tratada como exemplo de retorno comprovado. São referências de linguagem e formato, e é assim que vamos usá-las quando montarmos a matriz criativa da Toca.</div>
+  </div>
+
+</section>
+
+</div></main>
+
+<footer><div class="wrap">
+  <p><b>Metodologia.</b> Toda a pesquisa desta apresentação foi feita em fontes públicas, no dia 17 de setembro de 2026: ficha do Perfil da Empresa no Google, perfil público do Instagram, cardápio da loja de pedidos, Biblioteca de Anúncios da Meta e fichas públicas dos concorrentes citados.</p>
+  <p><b>Sobre os números de terceiros.</b> Notas e faixas de preço do Google são dados colaborativos, informados por usuários, e mudam com o tempo. Faixa de preço não equivale a ticket médio. Números de população são estimativas do IBGE para 2025 e não devem ser somados como público de uma mesma área de alcance.</p>
+  <p><b>Sobre a Biblioteca de Anúncios.</b> Ela mostra criativos, durações e datas de veiculação. Não mostra investimento, alcance, segmentação nem resultado. Anúncio ativo não comprova desempenho, e ausência de anúncio na consulta não comprova que a empresa nunca anunciou.</p>
+  <p><b>Sobre o que não está aqui.</b> Esta apresentação não estima faturamento, não projeta venda e não sugere valor de investimento. Ocupação por turno, ticket, margem e origem dos clientes são dados internos da Toca do Pintado e estão sinalizados como tal ao longo do documento.</p>
+  <p style="margin-top:18px"><b>Keepads</b> · Análise e direcionamento · Toca do Pintado · setembro de 2026</p>
+</div></footer>
+
+<script>
+var tabs=document.getElementById('tabs');
+var stepN=document.getElementById('stepN');
+tabs.addEventListener('click',function(e){
+  var btn=e.target.closest('button[data-t]'); if(!btn)return;
+  var all=[].slice.call(tabs.querySelectorAll('button'));
+  all.forEach(function(x){x.classList.remove('on')}); btn.classList.add('on');
+  [].forEach.call(document.querySelectorAll('.panel'),function(p){p.classList.remove('on')});
+  document.getElementById('p-'+btn.dataset.t).classList.add('on');
+  stepN.textContent=all.indexOf(btn)+1;
+  var tb=document.querySelector('.topbar');
+  window.scrollTo({top:tb.offsetTop,behavior:'smooth'});
+});
+document.addEventListener('keydown',function(e){
+  if(e.target.tagName==='INPUT')return;
+  var all=[].slice.call(tabs.querySelectorAll('button'));
+  var i=all.findIndex(function(x){return x.classList.contains('on')});
+  if(e.key==='ArrowRight'&&i<all.length-1)all[i+1].click();
+  if(e.key==='ArrowLeft'&&i>0)all[i-1].click();
+});
+</script>
+</body>
+</html>
